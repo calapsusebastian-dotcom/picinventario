@@ -64,11 +64,28 @@ class InventoryRecord extends Model
             return null;
         }
 
-        $usado = $this->relationLoaded('trillas')
+        return max(0, (float) $this->kg_recibidos - $this->kgUsadoEnTrillas());
+    }
+
+    /**
+     * Existencia minus whatever has already been assigned to trilla lotes,
+     * mirroring kgDisponible() so both KPIs move together as a remisión
+     * gets (partially) trillada. Null if existencia hasn't been set yet.
+     */
+    public function existenciaDisponible(): ?float
+    {
+        if ($this->existencia === null) {
+            return null;
+        }
+
+        return max(0, (float) $this->existencia - $this->kgUsadoEnTrillas());
+    }
+
+    protected function kgUsadoEnTrillas(): float
+    {
+        return $this->relationLoaded('trillas')
             ? $this->trillas->sum(fn (Trilla $t) => (float) $t->pivot->kg_usado)
             : (float) $this->trillas()->sum('kg_usado');
-
-        return max(0, (float) $this->kg_recibidos - $usado);
     }
 
     /**

@@ -174,20 +174,19 @@ class InventoryBoard extends Component
         // one has left to give, not an all-or-nothing per record.
         $kgRec = $allRecords->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
 
-        // Existencia stays all-or-nothing per record: once a remisión has no
-        // kg left to trillar, its existencia is tracked as trilla output.
-        $existencia = $allRecords
-            ->filter(fn (InventoryRecord $r) => $r->kg_recibidos === null || ($r->kgDisponible() ?? 0) > 0.001)
-            ->sum(fn (InventoryRecord $r) => (float) $r->existencia);
+        // Mirrors kg_recibidos: existencia drops by the same kg a remisión
+        // has given to trilla lotes, not just once it's fully consumed.
+        $existencia = $allRecords->sum(fn (InventoryRecord $r) => $r->existenciaDisponible() ?? 0);
 
-        // Factor ponderado por kg recibidos: cada remisión pesa según cuánto
-        // aportó, no todas por igual como en un promedio simple.
+        // Factor ponderado por kg disponibles (pendientes de trilla): cada
+        // remisión pesa según cuánto le queda por trillar, no por su kg
+        // recibidos original — una vez trillada, ya no debe seguir pesando.
         $conFactorRec = $allRecords->filter(
-            fn (InventoryRecord $r) => (float) $r->factor_rec > 0 && (float) $r->kg_recibidos > 0
+            fn (InventoryRecord $r) => (float) $r->factor_rec > 0 && ($r->kgDisponible() ?? 0) > 0
         );
-        $kgParaFactor = $conFactorRec->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
+        $kgParaFactor = $conFactorRec->sum(fn (InventoryRecord $r) => $r->kgDisponible());
         $factorPonderado = $kgParaFactor > 0
-            ? $conFactorRec->sum(fn (InventoryRecord $r) => (float) $r->factor_rec * (float) $r->kg_recibidos) / $kgParaFactor
+            ? $conFactorRec->sum(fn (InventoryRecord $r) => (float) $r->factor_rec * $r->kgDisponible()) / $kgParaFactor
             : 0;
 
         return [
