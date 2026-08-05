@@ -58,24 +58,29 @@ new class extends Component
         <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
             @if (auth()->user()->isAdmin())
                 <x-sidebar-link :href="route('inventario')" :active="request()->routeIs('inventario')" wire:navigate>
+                    <x-slot name="icon"><x-nav-icon name="tablero" /></x-slot>
                     {{ __('Tablero') }}
                 </x-sidebar-link>
                 <x-sidebar-link :href="route('informes')" :active="request()->routeIs('informes')" wire:navigate>
+                    <x-slot name="icon"><x-nav-icon name="informes" /></x-slot>
                     {{ __('Informes') }}
                 </x-sidebar-link>
             @endif
             @foreach ($this->stageLinks() as $link)
                 <x-sidebar-link :href="route('inventario.stage', $link['stage'])" :active="request()->routeIs('inventario.stage') && request()->route('stage') === $link['stage']" wire:navigate>
+                    <x-slot name="icon"><x-nav-icon :name="$link['stage']" /></x-slot>
                     {{ $link['label'] }}
                 </x-sidebar-link>
             @endforeach
             @if ($this->canAccessModule('trilla'))
                 <x-sidebar-link :href="route('trilla')" :active="request()->routeIs('trilla')" wire:navigate>
+                    <x-slot name="icon"><x-nav-icon name="trilla" /></x-slot>
                     {{ __('Trilla') }}
                 </x-sidebar-link>
             @endif
             @if ($this->canAccessModule('despacho'))
                 <x-sidebar-link :href="route('despacho')" :active="request()->routeIs('despacho')" wire:navigate>
+                    <x-slot name="icon"><x-nav-icon name="despacho" /></x-slot>
                     {{ __('Despacho') }}
                 </x-sidebar-link>
             @endif
@@ -83,12 +88,15 @@ new class extends Component
             @if (auth()->user()->isAdmin())
                 <div class="pt-3 mt-3 border-t border-gray-100 dark:border-gray-700 space-y-1">
                     <x-sidebar-link :href="route('usuarios')" :active="request()->routeIs('usuarios')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="roles" /></x-slot>
                         {{ __('Roles') }}
                     </x-sidebar-link>
                     <x-sidebar-link :href="route('productos')" :active="request()->routeIs('productos')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="productos" /></x-slot>
                         {{ __('Productos') }}
                     </x-sidebar-link>
                     <x-sidebar-link :href="route('clientes')" :active="request()->routeIs('clientes')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="clientes" /></x-slot>
                         {{ __('Clientes') }}
                     </x-sidebar-link>
                 </div>
@@ -98,7 +106,7 @@ new class extends Component
         <div class="border-t border-gray-100 dark:border-gray-700 p-3">
             <x-dropdown align="left" width="56">
                 <x-slot name="trigger">
-                    <button class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition ease-in-out duration-150">
+                    <button class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition ease-in-out duration-150">
                         <div class="flex-1 text-start truncate" x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
                         <svg class="fill-current h-4 w-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -141,35 +149,43 @@ new class extends Component
             <div class="py-2 px-3 space-y-1">
                 @if (auth()->user()->isAdmin())
                     <x-sidebar-link :href="route('inventario')" :active="request()->routeIs('inventario')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="tablero" /></x-slot>
                         {{ __('Tablero') }}
                     </x-sidebar-link>
                     <x-sidebar-link :href="route('informes')" :active="request()->routeIs('informes')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="informes" /></x-slot>
                         {{ __('Informes') }}
                     </x-sidebar-link>
                 @endif
                 @foreach ($this->stageLinks() as $link)
                     <x-sidebar-link :href="route('inventario.stage', $link['stage'])" :active="request()->routeIs('inventario.stage') && request()->route('stage') === $link['stage']" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon :name="$link['stage']" /></x-slot>
                         {{ $link['label'] }}
                     </x-sidebar-link>
                 @endforeach
                 @if ($this->canAccessModule('trilla'))
                     <x-sidebar-link :href="route('trilla')" :active="request()->routeIs('trilla')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="trilla" /></x-slot>
                         {{ __('Trilla') }}
                     </x-sidebar-link>
                 @endif
                 @if ($this->canAccessModule('despacho'))
                     <x-sidebar-link :href="route('despacho')" :active="request()->routeIs('despacho')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="despacho" /></x-slot>
                         {{ __('Despacho') }}
                     </x-sidebar-link>
                 @endif
                 @if (auth()->user()->isAdmin())
                     <x-sidebar-link :href="route('usuarios')" :active="request()->routeIs('usuarios')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="roles" /></x-slot>
                         {{ __('Roles') }}
                     </x-sidebar-link>
                     <x-sidebar-link :href="route('productos')" :active="request()->routeIs('productos')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="productos" /></x-slot>
                         {{ __('Productos') }}
                     </x-sidebar-link>
                     <x-sidebar-link :href="route('clientes')" :active="request()->routeIs('clientes')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="clientes" /></x-slot>
                         {{ __('Clientes') }}
                     </x-sidebar-link>
                 @endif
