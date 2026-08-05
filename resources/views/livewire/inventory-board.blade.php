@@ -252,7 +252,16 @@
                 </div>
 
                 <div class="tab-panel{{ $activeSection === 1 ? ' active' : '' }}">
-                    <div class="field"><label>Calidad enviada</label><input wire:model="form.calidad_enviada">@error('form.calidad_enviada') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                    <div class="field">
+                        <label>Calidad enviada</label>
+                        <select wire:model="form.calidad_enviada">
+                            <option value="">Selecciona...</option>
+                            @foreach ($productos as $p)
+                                <option value="{{ $p }}">{{ $p }}</option>
+                            @endforeach
+                        </select>
+                        @error('form.calidad_enviada') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                    </div>
                     <div class="field"><label>Kg enviados</label><input type="number" wire:model.live="form.kg_enviados">@error('form.kg_enviados') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     <div class="field"><label>Análisis enviado por</label>
                         <select wire:model="form.analisis_enviado_por"><option>Jorge</option><option>Evelyn</option><option>Natalia</option></select>

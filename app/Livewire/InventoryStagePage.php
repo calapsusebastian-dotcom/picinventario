@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Forms\InventoryRecordForm;
 use App\Models\InventoryRecord;
+use App\Models\Producto;
 use App\Support\InventoryStages;
 use Livewire\Component;
 
@@ -94,6 +95,7 @@ class InventoryStagePage extends Component
             'completedCount' => $completedCount,
             'stageLabel' => InventoryStages::label($this->stage),
             'stageRoleLabel' => InventoryStages::roleLabel($this->stage),
+            'productos' => Producto::orderBy('nombre')->pluck('nombre'),
         ]);
     }
 }

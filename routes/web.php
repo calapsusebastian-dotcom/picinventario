@@ -34,4 +34,8 @@ Route::view('usuarios', 'usuarios')
     ->middleware(['auth', 'verified'])
     ->name('usuarios');
 
+Route::view('productos', 'productos')
+    ->middleware(['auth', 'verified'])
+    ->name('productos');
+
 require __DIR__.'/auth.php';

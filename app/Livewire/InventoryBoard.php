@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Forms\InventoryRecordForm;
 use App\Models\InventoryRecord;
+use App\Models\Producto;
 use App\Support\InventoryStages;
 use Livewire\Component;
 
@@ -165,6 +166,7 @@ class InventoryBoard extends Component
             'years' => $years,
             'summary' => $this->buildSummary($allRecords),
             'sections' => $sections,
+            'productos' => Producto::orderBy('nombre')->pluck('nombre'),
         ]);
     }
 
