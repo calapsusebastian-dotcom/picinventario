@@ -51,6 +51,9 @@ class InventoryBoard extends Component
 
     public function save(): void
     {
+        $stage = InventoryStages::ORDER[$this->activeSection];
+        $this->form->validate($this->form->rulesForStage($stage));
+
         $data = $this->form->toDatabaseArray();
 
         if ($this->editingId) {

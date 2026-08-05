@@ -48,6 +48,8 @@ class InventoryStagePage extends Component
 
     public function save(): void
     {
+        $this->form->validate($this->form->rulesForStage($this->stage));
+
         $data = $this->form->toDatabaseArray();
 
         if ($this->editingId) {

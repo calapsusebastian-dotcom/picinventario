@@ -167,36 +167,38 @@
             <form wire:submit.prevent="save">
                 @if ($stage === 'general')
                     <div class="tab-panel active">
-                        <div class="field"><label>Año</label><input wire:model="form.anio"></div>
+                        <div class="field"><label>Año</label><input wire:model="form.anio">@error('form.anio') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Mes</label>
                             <select wire:model="form.mes">
                                 <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option>
                                 <option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
                             </select>
+                            @error('form.mes') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
-                        <div class="field"><label>Fecha</label><input type="date" wire:model="form.fecha"></div>
-                        <div class="field"><label>Remisión</label><input wire:model="form.remision" placeholder="R-0000"></div>
-                        <div class="field"><label>N° tulas</label><input type="number" wire:model="form.tulas"></div>
-                        <div class="field"><label>N° costal</label><input type="number" wire:model="form.costal"></div>
+                        <div class="field"><label>Fecha</label><input type="date" wire:model="form.fecha">@error('form.fecha') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Remisión</label><input wire:model="form.remision" placeholder="R-0000">@error('form.remision') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>N° tulas</label><input type="number" wire:model="form.tulas">@error('form.tulas') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>N° costal</label><input type="number" wire:model="form.costal">@error('form.costal') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     </div>
                 @endif
 
                 @if ($stage === 'envio')
                     <div class="tab-panel active">
-                        <div class="field"><label>Calidad enviada</label><input wire:model="form.calidad_enviada"></div>
-                        <div class="field"><label>Kg enviados</label><input type="number" wire:model="form.kg_enviados"></div>
+                        <div class="field"><label>Calidad enviada</label><input wire:model="form.calidad_enviada">@error('form.calidad_enviada') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Kg enviados</label><input type="number" wire:model="form.kg_enviados">@error('form.kg_enviados') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Análisis enviado por</label>
                             <select wire:model="form.analisis_enviado_por"><option>Jorge</option><option>Evelyn</option><option>Natalia</option></select>
+                            @error('form.analisis_enviado_por') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
                         <div></div>
-                        <div class="field"><label>Almendra sana <small>(%)</small></label><input type="number" wire:model="form.as_env"></div>
-                        <div class="field"><label>Pasilla <small>(%)</small></label><input type="number" wire:model="form.pas_env"></div>
-                        <div class="field"><label>Primer grupo <small>(%)</small></label><input type="number" wire:model="form.pg_env"></div>
-                        <div class="field"><label>Broca <small>(%)</small></label><input type="number" wire:model="form.broca_env"></div>
-                        <div class="field"><label>Humedad <small>(%)</small></label><input type="number" wire:model="form.humedad_env"></div>
-                        <div class="field"><label>Factor</label><input type="number" wire:model="form.factor_env"></div>
-                        <div class="field"><label>Taza</label><input wire:model="form.taza_env" placeholder="Notas de catación"></div>
-                        <div class="field"><label>Puntaje de taza</label><input type="number" wire:model="form.puntaje_taza_env"></div>
+                        <div class="field"><label>Almendra sana <small>(%)</small></label><input type="number" wire:model="form.as_env">@error('form.as_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Pasilla <small>(%)</small></label><input type="number" wire:model="form.pas_env">@error('form.pas_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Primer grupo <small>(%)</small></label><input type="number" wire:model="form.pg_env">@error('form.pg_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Broca <small>(%)</small></label><input type="number" wire:model="form.broca_env">@error('form.broca_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Humedad <small>(%)</small></label><input type="number" wire:model="form.humedad_env">@error('form.humedad_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Factor</label><input type="number" wire:model="form.factor_env">@error('form.factor_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Taza</label><input wire:model="form.taza_env" placeholder="Notas de catación">@error('form.taza_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Puntaje de taza</label><input type="number" wire:model="form.puntaje_taza_env">@error('form.puntaje_taza_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     </div>
                 @endif
 
@@ -204,34 +206,36 @@
                     <div class="tab-panel active">
                         <div class="field"><label>Análisis recibido por</label>
                             <select wire:model="form.analisis_recibido_por"><option>Bodega</option><option>Calidades</option><option>Trilladora</option></select>
+                            @error('form.analisis_recibido_por') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
-                        <div class="field"><label>Kg recibidos</label><input type="number" wire:model="form.kg_recibidos"></div>
-                        <div class="field"><label>Almendra sana <small>(%)</small></label><input type="number" wire:model="form.as_rec"></div>
-                        <div class="field"><label>Pasilla <small>(%)</small></label><input type="number" wire:model="form.pas_rec"></div>
-                        <div class="field"><label>Primer grupo <small>(%)</small></label><input type="number" wire:model="form.pg_rec"></div>
-                        <div class="field"><label>Broca <small>(%)</small></label><input type="number" wire:model="form.broca_rec"></div>
-                        <div class="field"><label>Humedad <small>(%)</small></label><input type="number" wire:model="form.humedad_rec"></div>
-                        <div class="field"><label>Factor</label><input type="number" wire:model="form.factor_rec"></div>
-                        <div class="field"><label>Taza</label><input wire:model="form.taza_rec" placeholder="Notas de catación"></div>
-                        <div class="field"><label>Puntaje de taza</label><input type="number" wire:model="form.puntaje_taza_rec"></div>
+                        <div class="field"><label>Kg recibidos</label><input type="number" wire:model="form.kg_recibidos">@error('form.kg_recibidos') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Almendra sana <small>(%)</small></label><input type="number" wire:model="form.as_rec">@error('form.as_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Pasilla <small>(%)</small></label><input type="number" wire:model="form.pas_rec">@error('form.pas_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Primer grupo <small>(%)</small></label><input type="number" wire:model="form.pg_rec">@error('form.pg_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Broca <small>(%)</small></label><input type="number" wire:model="form.broca_rec">@error('form.broca_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Humedad <small>(%)</small></label><input type="number" wire:model="form.humedad_rec">@error('form.humedad_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Factor</label><input type="number" wire:model="form.factor_rec">@error('form.factor_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Taza</label><input wire:model="form.taza_rec" placeholder="Notas de catación">@error('form.taza_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Puntaje de taza</label><input type="number" wire:model="form.puntaje_taza_rec">@error('form.puntaje_taza_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     </div>
                 @endif
 
                 @if ($stage === 'destino')
                     <div class="tab-panel active">
-                        <div class="field"><label>Destino</label><input wire:model="form.destino"></div>
-                        <div class="field"><label>Cliente</label><input wire:model="form.cliente"></div>
-                        <div class="field"><label>Negocio</label><input wire:model="form.negocio"></div>
+                        <div class="field"><label>Destino</label><input wire:model="form.destino">@error('form.destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Cliente</label><input wire:model="form.cliente">@error('form.cliente') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Negocio</label><input wire:model="form.negocio">@error('form.negocio') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Estatus</label>
                             <select wire:model="form.estatus"><option>En bodega</option><option>Despachado</option><option>En tránsito</option><option>Reservado</option></select>
+                            @error('form.estatus') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
-                        <div class="field"><label>Existencia <small>(kg)</small></label><input type="number" wire:model="form.existencia"></div>
+                        <div class="field"><label>Existencia <small>(kg)</small></label><input type="number" wire:model="form.existencia">@error('form.existencia') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     </div>
                 @endif
 
                 @if ($stage === 'imov')
                     <div class="tab-panel active">
-                        <div class="field"><label>Imov</label><input type="number" wire:model="form.imov"></div>
+                        <div class="field"><label>Imov</label><input type="number" wire:model="form.imov">@error('form.imov') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     </div>
                 @endif
             </form>
