@@ -331,7 +331,12 @@
                         <div class="producto-row" wire:key="producto-{{ $producto['id'] ?? 'new-'.$i }}">
                             <div class="field">
                                 @if ($i === 0)<label>Nombre / tipo</label>@endif
-                                <input wire:model="productos.{{ $i }}.nombre" placeholder="Ej. Excelso">
+                                <select wire:model="productos.{{ $i }}.nombre">
+                                    <option value="">Selecciona...</option>
+                                    @foreach ($productosCatalogo as $nombreProducto)
+                                        <option value="{{ $nombreProducto }}">{{ $nombreProducto }}</option>
+                                    @endforeach
+                                </select>
                                 @error("productos.{$i}.nombre") <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                             </div>
                             <div class="field">

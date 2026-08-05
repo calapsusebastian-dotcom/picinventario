@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\InventoryRecord;
+use App\Models\Producto;
 use App\Models\Trilla;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
@@ -290,6 +291,7 @@ class TrillaPage extends Component
             'selectedKgDisponible' => $selectedKgDisponible,
             'drawerKgRecibidos' => $drawerKgRecibidos,
             'editingTrilla' => $editingTrilla,
+            'productosCatalogo' => Producto::orderBy('nombre')->pluck('nombre'),
         ]);
     }
 }
