@@ -232,7 +232,16 @@
                 @if ($stage === 'destino')
                     <div class="tab-panel active">
                         <div class="field"><label>Destino</label><input wire:model="form.destino">@error('form.destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
-                        <div class="field"><label>Cliente</label><input wire:model="form.cliente">@error('form.cliente') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field">
+                            <label>Cliente</label>
+                            <select wire:model="form.cliente">
+                                <option value="">Selecciona...</option>
+                                @foreach ($clientes as $c)
+                                    <option value="{{ $c }}">{{ $c }}</option>
+                                @endforeach
+                            </select>
+                            @error('form.cliente') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                        </div>
                         <div class="field"><label>Negocio</label><input wire:model="form.negocio">@error('form.negocio') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Estatus</label>
                             <select wire:model="form.estatus"><option>En bodega</option><option>Despachado</option><option>En tránsito</option><option>Reservado</option></select>

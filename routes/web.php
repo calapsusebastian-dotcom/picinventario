@@ -38,4 +38,8 @@ Route::view('productos', 'productos')
     ->middleware(['auth', 'verified'])
     ->name('productos');
 
+Route::view('clientes', 'clientes')
+    ->middleware(['auth', 'verified'])
+    ->name('clientes');
+
 require __DIR__.'/auth.php';
