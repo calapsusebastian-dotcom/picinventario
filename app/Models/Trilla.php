@@ -32,13 +32,14 @@ class Trilla extends Model
     }
 
     /**
-     * Marca las remisiones vinculadas como Despachado cuando todos los
-     * productos del lote ya tienen remisión de despacho asignada.
+     * Keeps the linked remisiones' estatus in sync with this lote's despacho
+     * progress: Despachado once every producto has a remisión de despacho,
+     * back to En bodega if a despacho gets reverted and it no longer does.
      */
     public function syncRecordsEstatus(): void
     {
-        if ($this->isFullyDespachada()) {
-            $this->inventoryRecords()->update(['estatus' => 'Despachado']);
-        }
+        $estatus = $this->isFullyDespachada() ? 'Despachado' : 'En bodega';
+
+        $this->inventoryRecords()->update(['estatus' => $estatus]);
     }
 }

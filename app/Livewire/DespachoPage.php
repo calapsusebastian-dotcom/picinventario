@@ -11,6 +11,7 @@ class DespachoPage extends Component
 
     public bool $showDrawer = false;
     public ?int $editingProductoId = null;
+    public ?int $confirmRevertId = null;
 
     public string $remision_despacho = '';
     public string $destino = '';
@@ -48,6 +49,26 @@ class DespachoPage extends Component
         $producto->trilla?->syncRecordsEstatus();
 
         $this->showDrawer = false;
+    }
+
+    public function confirmRevert(int $id): void
+    {
+        $this->confirmRevertId = $id;
+    }
+
+    public function cancelRevert(): void
+    {
+        $this->confirmRevertId = null;
+    }
+
+    public function revert(int $id): void
+    {
+        $producto = TrillaProducto::findOrFail($id);
+        $producto->update(['remision_despacho' => null, 'destino' => null]);
+
+        $producto->trilla?->syncRecordsEstatus();
+
+        $this->confirmRevertId = null;
     }
 
     public function render()
