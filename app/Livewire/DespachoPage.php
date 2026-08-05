@@ -45,6 +45,11 @@ class DespachoPage extends Component
         ]);
 
         $producto = TrillaProducto::findOrFail($this->editingProductoId);
+
+        if (! $producto->despachado_at) {
+            $validated['despachado_at'] = now();
+        }
+
         $producto->update($validated);
 
         $producto->trilla?->syncRecordsEstatus();
@@ -65,7 +70,7 @@ class DespachoPage extends Component
     public function revert(int $id): void
     {
         $producto = TrillaProducto::findOrFail($id);
-        $producto->update(['remision_despacho' => null, 'destino' => null]);
+        $producto->update(['remision_despacho' => null, 'destino' => null, 'despachado_at' => null]);
 
         $producto->trilla?->syncRecordsEstatus();
 

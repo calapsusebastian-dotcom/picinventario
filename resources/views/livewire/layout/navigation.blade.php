@@ -60,6 +60,9 @@ new class extends Component
                 <x-sidebar-link :href="route('inventario')" :active="request()->routeIs('inventario')" wire:navigate>
                     {{ __('Tablero') }}
                 </x-sidebar-link>
+                <x-sidebar-link :href="route('informes')" :active="request()->routeIs('informes')" wire:navigate>
+                    {{ __('Informes') }}
+                </x-sidebar-link>
             @endif
             @foreach ($this->stageLinks() as $link)
                 <x-sidebar-link :href="route('inventario.stage', $link['stage'])" :active="request()->routeIs('inventario.stage') && request()->route('stage') === $link['stage']" wire:navigate>
@@ -139,6 +142,9 @@ new class extends Component
                 @if (auth()->user()->isAdmin())
                     <x-sidebar-link :href="route('inventario')" :active="request()->routeIs('inventario')" wire:navigate>
                         {{ __('Tablero') }}
+                    </x-sidebar-link>
+                    <x-sidebar-link :href="route('informes')" :active="request()->routeIs('informes')" wire:navigate>
+                        {{ __('Informes') }}
                     </x-sidebar-link>
                 @endif
                 @foreach ($this->stageLinks() as $link)

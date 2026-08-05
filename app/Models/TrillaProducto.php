@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TrillaProducto extends Model
 {
-    protected $fillable = ['trilla_id', 'nombre', 'kg', 'factor', 'remision_despacho', 'destino'];
+    protected $fillable = ['trilla_id', 'nombre', 'kg', 'factor', 'remision_despacho', 'destino', 'despachado_at'];
 
     protected $casts = [
         'kg' => 'decimal:2',
         'factor' => 'decimal:2',
+        'despachado_at' => 'datetime',
     ];
 
     public function trilla(): BelongsTo
