@@ -171,7 +171,12 @@
                     </div>
                     <div class="field">
                         <label>Destino</label>
-                        <input wire:model="destino" placeholder="Cliente o destino final">
+                        <select wire:model="destino">
+                            <option value="">Selecciona...</option>
+                            @foreach ($clientes as $c)
+                                <option value="{{ $c }}">{{ $c }}</option>
+                            @endforeach
+                        </select>
                         @error('destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                     </div>
                 </div>

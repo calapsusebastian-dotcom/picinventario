@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Cliente;
 use App\Models\TrillaProducto;
 use Livewire\Component;
 
@@ -121,6 +122,7 @@ class DespachoPage extends Component
             'despachados' => $despachados,
             'completedCount' => $despachados->count(),
             'editingProducto' => $editingProducto,
+            'clientes' => Cliente::orderBy('nombre')->pluck('nombre'),
         ]);
     }
 }
