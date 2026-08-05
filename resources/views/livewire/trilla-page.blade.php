@@ -73,7 +73,7 @@
                                 $done = count(array_filter($stages));
                                 $disp = $r->kgDisponible();
                             @endphp
-                            <tr class="data-row" wire:click="toggleExpand({{ $r->id }})">
+                            <tr class="data-row" wire:key="available-{{ $r->id }}" wire:click="toggleExpand({{ $r->id }})">
                                 <td class="checkbox-cell" @click.stop="null"><input type="checkbox" wire:model.live="selected" value="{{ $r->id }}"></td>
                                 <td class="mono">{{ $r->fecha?->format('Y-m-d') ?? '—' }}</td>
                                 <td class="mono">{{ $r->remision ?: '—' }}</td>
@@ -170,7 +170,7 @@
                     </thead>
                     <tbody>
                         @forelse ($recentTrillas as $t)
-                            <tr class="data-row" wire:click="toggleExpandTrilla({{ $t->id }})">
+                            <tr class="data-row" wire:key="recent-trilla-{{ $t->id }}" wire:click="toggleExpandTrilla({{ $t->id }})">
                                 <td class="mono">#{{ $t->id }}</td>
                                 <td class="mono">{{ $t->fecha?->format('Y-m-d') ?? '—' }}</td>
                                 <td>{{ $t->inventory_records_count }}</td>
@@ -303,7 +303,7 @@
                 <div style="padding:14px 24px 0;">
                     <div class="section-label" style="margin:0 0 10px;">Cuántos kg tomar de cada remisión</div>
                     @foreach ($selectedRecords as $id => $r)
-                        <div class="producto-row" style="align-items:flex-end;">
+                        <div class="producto-row" style="align-items:flex-end;" wire:key="kg-usado-{{ $id }}">
                             <div class="field" style="flex:1.3;">
                                 <label>Remisión {{ $r->remision ?: '#'.$id }}</label>
                                 <span style="font-size:12px;color:var(--pic-ink-soft);">{{ number_format($r->kgDisponible() ?? 0, 2, ',', '.') }} kg disponibles</span>
@@ -328,7 +328,7 @@
                     <div class="section-label" style="margin:0 0 10px;">Productos que salen de esta trilla</div>
 
                     @foreach ($productos as $i => $producto)
-                        <div class="producto-row">
+                        <div class="producto-row" wire:key="producto-{{ $producto['id'] ?? 'new-'.$i }}">
                             <div class="field">
                                 @if ($i === 0)<label>Nombre / tipo</label>@endif
                                 <input wire:model="productos.{{ $i }}.nombre" placeholder="Ej. Excelso">
