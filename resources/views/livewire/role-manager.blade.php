@@ -49,11 +49,17 @@
                     </thead>
                     <tbody>
                         @forelse ($users as $u)
-                            @php $col = $roleColor($u->role); @endphp
                             <tr class="data-row" wire:click="openEdit({{ $u->id }})">
                                 <td>{{ $u->name }}@if($u->id === auth()->id()) <span class="mono" style="color:var(--pic-ink-faint);font-size:11px;">(tú)</span>@endif</td>
                                 <td class="mono">{{ $u->email }}</td>
-                                <td><span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ \App\Livewire\RoleManager::ROLE_LABELS[$u->role] ?? $u->role }}</span></td>
+                                <td>
+                                    <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                                        @foreach ($u->roles ?? [] as $role)
+                                            @php $col = $roleColor($role); @endphp
+                                            <span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ \App\Livewire\RoleManager::ROLE_LABELS[$role] ?? $role }}</span>
+                                        @endforeach
+                                    </div>
+                                </td>
                                 <td>
                                     <button type="button" class="icon-btn" title="Editar" wire:click.stop="openEdit({{ $u->id }})">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -104,13 +110,17 @@
                         <input type="password" wire:model="password" placeholder="{{ $editingUserId ? '••••••••' : 'Mínimo 8 caracteres' }}">
                     </div>
                     <div class="field">
-                        <label>Rol</label>
-                        <select wire:model="role">
+                        <label>Roles</label>
+                        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
                             @foreach (\App\Livewire\RoleManager::ROLE_LABELS as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
+                                <label style="display:flex;align-items:center;gap:8px;font-weight:400;">
+                                    <input type="checkbox" wire:model="roles" value="{{ $value }}" style="width:auto;">
+                                    {{ $label }}
+                                </label>
                             @endforeach
-                        </select>
-                        @error('role') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                        </div>
+                        @error('roles') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                        @error('roles.*') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                     </div>
                 </div>
             </form>

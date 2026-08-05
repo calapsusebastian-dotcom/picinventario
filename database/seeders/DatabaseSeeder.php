@@ -21,14 +21,14 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'role' => 'admin',
+            'roles' => ['admin'],
         ]);
 
         foreach (InventoryStages::ORDER as $stage) {
             User::factory()->create([
                 'name' => InventoryStages::label($stage),
                 'email' => $stage.'@example.com',
-                'role' => $stage,
+                'roles' => [$stage],
             ]);
         }
 

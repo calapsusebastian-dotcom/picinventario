@@ -26,7 +26,7 @@ new class extends Component
 
         $stages = $user->isAdmin()
             ? InventoryStages::ORDER
-            : array_intersect(InventoryStages::ORDER, [$user->role]);
+            : array_intersect(InventoryStages::ORDER, $user->roles ?? []);
 
         return collect($stages)
             ->map(fn (string $stage) => ['stage' => $stage, 'label' => InventoryStages::label($stage)])
@@ -41,7 +41,7 @@ new class extends Component
     {
         $user = auth()->user();
 
-        return $user->isAdmin() || $user->role === $role;
+        return $user->isAdmin() || $user->hasRole($role);
     }
 }; ?>
 

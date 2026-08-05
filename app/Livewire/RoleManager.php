@@ -29,7 +29,8 @@ class RoleManager extends Component
     public string $name = '';
     public string $email = '';
     public string $password = '';
-    public string $role = 'general';
+    /** @var array<int, string> */
+    public array $roles = ['general'];
 
     public function mount(): void
     {
@@ -42,7 +43,7 @@ class RoleManager extends Component
         $this->name = '';
         $this->email = '';
         $this->password = '';
-        $this->role = 'general';
+        $this->roles = ['general'];
         $this->showDrawer = true;
     }
 
@@ -54,7 +55,7 @@ class RoleManager extends Component
         $this->name = $user->name;
         $this->email = $user->email;
         $this->password = '';
-        $this->role = $user->role;
+        $this->roles = $user->roles;
         $this->showDrawer = true;
     }
 
@@ -66,8 +67,8 @@ class RoleManager extends Component
     public function save(): void
     {
         // Guard against an admin locking themselves out.
-        if ($this->editingUserId === auth()->id() && $this->role !== 'admin') {
-            $this->addError('role', 'No puedes quitarte el rol de administrador a ti mismo.');
+        if ($this->editingUserId === auth()->id() && ! in_array('admin', $this->roles, true)) {
+            $this->addError('roles', 'No puedes quitarte el rol de administrador a ti mismo.');
 
             return;
         }
@@ -76,7 +77,8 @@ class RoleManager extends Component
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->editingUserId)],
             'password' => [$this->editingUserId ? 'nullable' : 'required', 'string', 'min:8'],
-            'role' => ['required', 'string', Rule::in(array_keys(self::ROLE_LABELS))],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => [Rule::in(array_keys(self::ROLE_LABELS))],
         ]);
 
         if ($this->editingUserId) {
@@ -84,7 +86,7 @@ class RoleManager extends Component
             $user->fill([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'role' => $validated['role'],
+                'roles' => $validated['roles'],
             ]);
 
             if ($validated['password'] !== '' && $validated['password'] !== null) {
@@ -97,7 +99,7 @@ class RoleManager extends Component
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
-                'role' => $validated['role'],
+                'roles' => $validated['roles'],
                 'email_verified_at' => now(),
             ]);
         }
@@ -136,7 +138,6 @@ class RoleManager extends Component
                         ->orWhere('email', 'like', "%{$this->search}%");
                 });
             })
-            ->orderBy('role')
             ->orderBy('name')
             ->get();
 
