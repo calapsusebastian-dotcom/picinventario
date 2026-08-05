@@ -89,7 +89,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Kg env.</th><th>Kg rec.</th><th>Cliente</th><th>Estatus</th><th>Progreso</th><th></th>
+                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Kg env.</th><th>Kg rec.</th><th>Cliente</th><th>Imov</th><th>Estatus</th><th>Progreso</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -111,6 +111,7 @@
                                 <td class="mono num">{{ $r->kg_enviados ?: '0' }}</td>
                                 <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
                                 <td>{{ $r->cliente ?: '—' }}</td>
+                                <td class="mono num">{{ $r->imov ?: '—' }}</td>
                                 <td><span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ $r->estatus }}</span></td>
                                 <td>
                                     <div class="progress-wrap">
@@ -134,7 +135,7 @@
 
                             @if ($confirmDeleteId === $r->id)
                                 <tr class="confirm-row">
-                                    <td colspan="9">
+                                    <td colspan="10">
                                         ¿Eliminar el registro {{ $r->remision ?: 'sin remisión' }}? Esta acción no se puede deshacer.
                                         <button type="button" class="btn-del-confirm" wire:click.stop="delete({{ $r->id }})">Eliminar</button>
                                         <button type="button" class="btn-del-cancel" wire:click.stop="cancelDelete">Cancelar</button>
@@ -144,7 +145,7 @@
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="9">
+                                    <td colspan="10">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío · {{ $r->analisis_enviado_por ?: '—' }}</span></div>
@@ -198,7 +199,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="9">No hay registros que coincidan con los filtros.</td></tr>
+                            <tr class="empty-row"><td colspan="10">No hay registros que coincidan con los filtros.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
