@@ -103,9 +103,9 @@
                                 <td class="mono">{{ $r->fecha?->format('Y-m-d') ?? '—' }}</td>
                                 <td class="mono">
                                     {{ $r->remision ?: '—' }}
-                                    @if ($r->trilla_id)
-                                        <span class="batch-pill" title="Lote de trilla #{{ $r->trilla_id }}">Trilla #{{ $r->trilla_id }}</span>
-                                    @endif
+                                    @foreach ($r->trillas as $t)
+                                        <span class="batch-pill" title="Lote de trilla #{{ $t->id }} · usó {{ number_format((float) $t->pivot->kg_usado, 2, ',', '.') }} kg de esta remisión">Trilla #{{ $t->id }}</span>
+                                    @endforeach
                                 </td>
                                 <td>{{ $r->calidad_enviada ?: '—' }}</td>
                                 <td class="mono num">{{ $r->kg_enviados ?: '0' }}</td>
@@ -183,16 +183,16 @@
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">Imov</span></div>
                                                 <div class="detail-item"><span>Imov</span><span>{{ $r->imov ?: '—' }}</span></div>
                                             </div>
-                                            @if ($r->trilla)
+                                            @foreach ($r->trillas as $t)
                                                 <div class="detail-block" style="grid-column:1 / -1;">
-                                                    <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">Trilla · Lote #{{ $r->trilla_id }} ({{ $r->trilla->fecha?->format('Y-m-d') ?: '—' }})</span></div>
-                                                    @forelse ($r->trilla->productos as $p)
+                                                    <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">Trilla · Lote #{{ $t->id }} ({{ $t->fecha?->format('Y-m-d') ?: '—' }}) · {{ number_format((float) $t->pivot->kg_usado, 2, ',', '.') }} kg de esta remisión</span></div>
+                                                    @forelse ($t->productos as $p)
                                                         <div class="detail-item"><span>{{ $p->nombre }}</span><span>{{ $p->kg ? $p->kg.' kg' : '—' }}@if($p->factor) · factor {{ $p->factor }}@endif · {{ $p->remision_despacho ? 'Despachado ('.$p->remision_despacho.')'.($p->destino ? ' → '.$p->destino : '') : 'Sin despachar' }}</span></div>
                                                     @empty
                                                         <div class="detail-item"><span>Productos</span><span>Sin productos registrados</span></div>
                                                     @endforelse
                                                 </div>
-                                            @endif
+                                            @endforeach
                                         </div>
                                     </td>
                                 </tr>

@@ -127,7 +127,7 @@ class InventoryBoard extends Component
 
     public function render()
     {
-        $allRecords = InventoryRecord::with('trilla.productos')->orderByDesc('fecha')->orderByDesc('id')->get();
+        $allRecords = InventoryRecord::with('trillas.productos')->orderByDesc('fecha')->orderByDesc('id')->get();
 
         $years = $allRecords->pluck('anio')->filter()->unique()->sort()->values();
 
@@ -169,17 +169,15 @@ class InventoryBoard extends Component
     {
         $kgEnv = $allRecords->sum(fn (InventoryRecord $r) => (float) $r->kg_enviados);
 
-        // Once a remisión is grouped into a trilla lote, its kg recibidos
-        // becomes trilla output instead — subtract it here so this KPI only
-        // reflects kg recibidos still waiting to be trillados.
-        $kgRec = $allRecords
-            ->whereNull('trilla_id')
-            ->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
+        // Kg that have gone into a trilla lote no longer count here — a
+        // remisión can be partially trillada, so this sums whatever kg each
+        // one has left to give, not an all-or-nothing per record.
+        $kgRec = $allRecords->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
 
-        // Same story for existencia — once trillado, that stock is tracked
-        // as trilla output, not as raw-remisión existencia anymore.
+        // Existencia stays all-or-nothing per record: once a remisión has no
+        // kg left to trillar, its existencia is tracked as trilla output.
         $existencia = $allRecords
-            ->whereNull('trilla_id')
+            ->filter(fn (InventoryRecord $r) => $r->kg_recibidos === null || ($r->kgDisponible() ?? 0) > 0.001)
             ->sum(fn (InventoryRecord $r) => (float) $r->existencia);
 
         // Factor ponderado por kg recibidos: cada remisión pesa según cuánto

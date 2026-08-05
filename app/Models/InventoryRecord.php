@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class InventoryRecord extends Model
 {
@@ -43,12 +43,32 @@ class InventoryRecord extends Model
     ];
 
     /**
-     * The trilla lote this remisión was grouped into, if any. Independent
-     * of the general/envío/recepción/destino workflow below.
+     * The trilla lote(s) this remisión has contributed kg to. A remisión can
+     * be split across several lotes over time, independent of the
+     * general/envío/recepción/destino workflow below.
      */
-    public function trilla(): BelongsTo
+    public function trillas(): BelongsToMany
     {
-        return $this->belongsTo(Trilla::class);
+        return $this->belongsToMany(Trilla::class, 'trilla_inventory_record')
+            ->withPivot('kg_usado')
+            ->withTimestamps();
+    }
+
+    /**
+     * Kg recibidos minus whatever has already been assigned to trilla lotes.
+     * Null if this remisión hasn't gone through recepción yet.
+     */
+    public function kgDisponible(): ?float
+    {
+        if ($this->kg_recibidos === null) {
+            return null;
+        }
+
+        $usado = $this->relationLoaded('trillas')
+            ? $this->trillas->sum(fn (Trilla $t) => (float) $t->pivot->kg_usado)
+            : (float) $this->trillas()->sum('kg_usado');
+
+        return max(0, (float) $this->kg_recibidos - $usado);
     }
 
     /**

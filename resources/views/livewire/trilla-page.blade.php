@@ -62,7 +62,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad enviada</th><th>Kg rec.</th><th>Cliente</th><th>Estatus</th><th>Progreso</th>
+                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad enviada</th><th>Kg rec.</th><th>Kg disp.</th><th>Cliente</th><th>Estatus</th><th>Progreso</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,6 +71,7 @@
                                 $col = $statusColor($r->estatus);
                                 $stages = $r->stageStatus();
                                 $done = count(array_filter($stages));
+                                $disp = $r->kgDisponible();
                             @endphp
                             <tr class="data-row" wire:click="toggleExpand({{ $r->id }})">
                                 <td class="checkbox-cell" @click.stop="null"><input type="checkbox" wire:model.live="selected" value="{{ $r->id }}"></td>
@@ -78,6 +79,7 @@
                                 <td class="mono">{{ $r->remision ?: '—' }}</td>
                                 <td>{{ $r->calidad_enviada ?: '—' }}</td>
                                 <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
+                                <td class="mono num">{{ $disp !== null ? number_format($disp, 2, ',', '.') : '—' }}</td>
                                 <td>{{ $r->cliente ?: '—' }}</td>
                                 <td><span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ $r->estatus }}</span></td>
                                 <td>
@@ -94,7 +96,7 @@
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="8">
+                                    <td colspan="9">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">General</span></div>
@@ -140,7 +142,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="8">No hay remisiones disponibles para trillar.</td></tr>
+                            <tr class="empty-row"><td colspan="9">No hay remisiones disponibles para trillar.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -149,7 +151,7 @@
 
         @if (count($selected) > 0)
             <div class="selection-bar">
-                <span>{{ count($selected) }} remisión(es) seleccionada(s) · {{ number_format((float) $selectedKgRecibidos, 2, ',', '.') }} kg recibidos</span>
+                <span>{{ count($selected) }} remisión(es) seleccionada(s) · {{ number_format((float) $selectedKgDisponible, 2, ',', '.') }} kg disponibles</span>
                 <button type="button" class="btn-primary" wire:click="openProcess">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                     Trillar seleccionadas
@@ -195,7 +197,7 @@
 
                             @if ($expandedTrilla === $t->id)
                                 @php
-                                    $kgIngresados = (float) $t->inventoryRecords->sum('kg_recibidos');
+                                    $kgIngresados = (float) $t->inventoryRecords->sum(fn ($ir) => (float) $ir->pivot->kg_usado);
                                     $kgProductos = (float) $t->productos->sum('kg');
                                     $kgSobrante = $kgIngresados - $kgProductos;
                                 @endphp
@@ -209,7 +211,7 @@
                                                         <table>
                                                             <thead>
                                                                 <tr>
-                                                                    <th>Remisión</th><th>Fecha</th><th>Calidad enviada</th><th>Kg env.</th><th>Kg rec.</th><th>Cliente</th><th>Estatus</th>
+                                                                    <th>Remisión</th><th>Fecha</th><th>Calidad enviada</th><th>Kg rec.</th><th>Kg usado (lote)</th><th>Cliente</th><th>Estatus</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -219,8 +221,8 @@
                                                                         <td class="mono">{{ $ir->remision ?: '—' }}</td>
                                                                         <td class="mono">{{ $ir->fecha?->format('Y-m-d') ?: '—' }}</td>
                                                                         <td>{{ $ir->calidad_enviada ?: '—' }}</td>
-                                                                        <td class="mono num">{{ $ir->kg_enviados ?: '0' }}</td>
                                                                         <td class="mono num">{{ $ir->kg_recibidos ?: '0' }}</td>
+                                                                        <td class="mono num">{{ number_format((float) $ir->pivot->kg_usado, 2, ',', '.') }}</td>
                                                                         <td>{{ $ir->cliente ?: '—' }}</td>
                                                                         <td><span class="badge" style="background:{{ $irCol['bg'] }};color:{{ $irCol['fg'] }}">{{ $ir->estatus }}</span></td>
                                                                     </tr>
@@ -243,7 +245,7 @@
                                                     <div class="detail-item"><span>Productos</span><span>Ninguno registrado</span></div>
                                                 @endforelse
                                                 <div class="detail-item" style="border-top:1px solid var(--pic-line);margin-top:6px;padding-top:8px;">
-                                                    <span>Kg ingresados (remisiones)</span>
+                                                    <span>Kg usados de las remisiones</span>
                                                     <span>{{ number_format($kgIngresados, 2, ',', '.') }} kg</span>
                                                 </div>
                                                 <div class="detail-item">
@@ -287,7 +289,7 @@
 
             <div style="padding:16px 24px 0;">
                 <div class="selection-bar" style="margin-top:0;">
-                    <span>Kg recibidos ({{ $editingTrillaId ? 'remisiones de este lote' : 'remisiones seleccionadas' }})</span>
+                    <span>Kg a usar ({{ $editingTrillaId ? 'remisiones de este lote' : 'remisiones seleccionadas' }})</span>
                     <span class="mono" style="font-size:15px;">{{ number_format((float) $drawerKgRecibidos, 2, ',', '.') }} kg</span>
                 </div>
                 @if ($editingTrilla)
@@ -296,6 +298,25 @@
                     </p>
                 @endif
             </div>
+
+            @if (! $editingTrillaId)
+                <div style="padding:14px 24px 0;">
+                    <div class="section-label" style="margin:0 0 10px;">Cuántos kg tomar de cada remisión</div>
+                    @foreach ($selectedRecords as $id => $r)
+                        <div class="producto-row" style="align-items:flex-end;">
+                            <div class="field" style="flex:1.3;">
+                                <label>Remisión {{ $r->remision ?: '#'.$id }}</label>
+                                <span style="font-size:12px;color:var(--pic-ink-soft);">{{ number_format($r->kgDisponible() ?? 0, 2, ',', '.') }} kg disponibles</span>
+                            </div>
+                            <div class="field">
+                                <label>Kg a usar</label>
+                                <input type="number" step="0.01" wire:model="kgUsado.{{ $id }}">
+                                @error('kgUsado.'.$id) <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
 
             <form wire:submit.prevent="save">
                 <div class="tab-panel active">

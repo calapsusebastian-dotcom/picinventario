@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Trilla extends Model
@@ -13,9 +14,11 @@ class Trilla extends Model
         'fecha' => 'date',
     ];
 
-    public function inventoryRecords(): HasMany
+    public function inventoryRecords(): BelongsToMany
     {
-        return $this->hasMany(InventoryRecord::class);
+        return $this->belongsToMany(InventoryRecord::class, 'trilla_inventory_record')
+            ->withPivot('kg_usado')
+            ->withTimestamps();
     }
 
     public function productos(): HasMany

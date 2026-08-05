@@ -14,6 +14,9 @@ class TrillaPage extends Component
     /** @var array<int, int|string> Selected InventoryRecord ids available to trillar. */
     public array $selected = [];
 
+    /** @var array<int|string, string> Kg to take from each selected remisión, keyed by its id. */
+    public array $kgUsado = [];
+
     public ?int $expandedRow = null;
     public ?int $expandedTrilla = null;
     public ?int $confirmRevertId = null;
@@ -44,6 +47,12 @@ class TrillaPage extends Component
         $this->productos = [
             ['id' => null, 'nombre' => '', 'kg' => '', 'factor' => ''],
         ];
+
+        $records = InventoryRecord::with('trillas')->whereIn('id', $this->selected)->get()->keyBy('id');
+        $this->kgUsado = collect($this->selected)
+            ->mapWithKeys(fn ($id) => [$id => (string) ($records->get($id)?->kgDisponible() ?? 0)])
+            ->all();
+
         $this->showDrawer = true;
     }
 
@@ -72,6 +81,7 @@ class TrillaPage extends Component
     {
         $this->showDrawer = false;
         $this->editingTrillaId = null;
+        $this->kgUsado = [];
     }
 
     public function toggleExpand(int $id): void
@@ -96,13 +106,24 @@ class TrillaPage extends Component
     }
 
     /**
-     * Undo a trilla lote entirely: the remisiones go back to being
-     * available, and the lote (with its productos) is deleted.
+     * Undo a trilla lote entirely: the kg it had taken from each remisión
+     * go back to being available, and the lote (with its productos) is
+     * deleted.
      */
     public function revertTrilla(int $id): void
     {
-        InventoryRecord::where('trilla_id', $id)->update(['trilla_id' => null, 'estatus' => 'En bodega']);
-        Trilla::destroy($id);
+        $trilla = Trilla::with('inventoryRecords')->findOrFail($id);
+        $recordIds = $trilla->inventoryRecords->pluck('id');
+
+        $trilla->inventoryRecords()->detach();
+
+        // Only reset a remisión's estatus if it isn't still tied to another
+        // trilla lote (it may have contributed the rest of its kg there).
+        InventoryRecord::whereIn('id', $recordIds)
+            ->whereDoesntHave('trillas')
+            ->update(['estatus' => 'En bodega']);
+
+        $trilla->delete();
 
         if ($this->expandedTrilla === $id) {
             $this->expandedTrilla = null;
@@ -132,6 +153,25 @@ class TrillaPage extends Component
             $this->showDrawer = false;
 
             return;
+        }
+
+        if (! $this->editingTrillaId) {
+            $records = InventoryRecord::with('trillas')->whereIn('id', $this->selected)->get()->keyBy('id');
+
+            foreach ($this->selected as $id) {
+                $disponible = $records->get($id)?->kgDisponible() ?? 0;
+                $usado = is_numeric($this->kgUsado[$id] ?? null) ? (float) $this->kgUsado[$id] : 0;
+
+                if ($usado <= 0) {
+                    $this->addError('kgUsado.'.$id, 'Ingresa cuántos kg vas a tomar de esta remisión.');
+                } elseif ($usado > $disponible + 0.001) {
+                    $this->addError('kgUsado.'.$id, 'Solo hay '.number_format($disponible, 2, ',', '.').' kg disponibles.');
+                }
+            }
+
+            if ($this->getErrorBag()->isNotEmpty()) {
+                return;
+            }
         }
 
         $validated = Validator::make([
@@ -189,9 +229,12 @@ class TrillaPage extends Component
                 ]);
             }
 
-            InventoryRecord::whereIn('id', $this->selected)->update(['trilla_id' => $trilla->id]);
+            foreach ($this->selected as $id) {
+                $trilla->inventoryRecords()->attach($id, ['kg_usado' => $this->kgUsado[$id]]);
+            }
 
             $this->selected = [];
+            $this->kgUsado = [];
         }
 
         $this->editingTrillaId = null;
@@ -200,11 +243,17 @@ class TrillaPage extends Component
 
     public function render()
     {
-        $available = InventoryRecord::whereNull('trilla_id')
+        $available = InventoryRecord::with('trillas')
             ->orderByDesc('fecha')
             ->orderByDesc('id')
             ->get()
             ->filter(function (InventoryRecord $record) {
+                // Still shown while pending recepción (kg_recibidos null);
+                // otherwise only while it has leftover kg to give.
+                if ($record->kg_recibidos !== null && $record->kgDisponible() <= 0.001) {
+                    return false;
+                }
+
                 if ($this->search === '') {
                     return true;
                 }
@@ -219,11 +268,16 @@ class TrillaPage extends Component
             ->limit(5)
             ->get();
 
-        $selectedKgRecibidos = InventoryRecord::whereIn('id', $this->selected)->sum('kg_recibidos');
+        $selectedRecords = InventoryRecord::with('trillas')->whereIn('id', $this->selected)->get()->keyBy('id');
+
+        $selectedKgDisponible = $selectedRecords->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
+
+        $selectedKgUsado = collect($this->kgUsado)->sum(fn ($v) => is_numeric($v) ? (float) $v : 0);
 
         $drawerKgRecibidos = $this->editingTrillaId
-            ? InventoryRecord::where('trilla_id', $this->editingTrillaId)->sum('kg_recibidos')
-            : $selectedKgRecibidos;
+            ? ($recentTrillas->firstWhere('id', $this->editingTrillaId)?->inventoryRecords ?? collect())
+                ->sum(fn (InventoryRecord $r) => (float) $r->pivot->kg_usado)
+            : $selectedKgUsado;
 
         $editingTrilla = $this->editingTrillaId
             ? $recentTrillas->firstWhere('id', $this->editingTrillaId) ?? Trilla::withCount('inventoryRecords')->find($this->editingTrillaId)
@@ -232,7 +286,8 @@ class TrillaPage extends Component
         return view('livewire.trilla-page', [
             'available' => $available,
             'recentTrillas' => $recentTrillas,
-            'selectedKgRecibidos' => $selectedKgRecibidos,
+            'selectedRecords' => $selectedRecords,
+            'selectedKgDisponible' => $selectedKgDisponible,
             'drawerKgRecibidos' => $drawerKgRecibidos,
             'editingTrilla' => $editingTrilla,
         ]);
