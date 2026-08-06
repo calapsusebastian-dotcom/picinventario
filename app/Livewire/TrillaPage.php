@@ -150,6 +150,12 @@ class TrillaPage extends Component
 
     public function save(): void
     {
+        // Manual addError() calls below don't get cleared automatically
+        // between requests the way $this->validate() does, so a stale
+        // error from a previous failed attempt could linger even after
+        // the user fixes it.
+        $this->resetErrorBag();
+
         if (! $this->editingTrillaId && empty($this->selected)) {
             $this->showDrawer = false;
 
@@ -190,6 +196,20 @@ class TrillaPage extends Component
         ], [
             'productos.*.nombre.required' => 'Cada producto necesita un nombre.',
         ])->validate();
+
+        // The output products can't total more kg than what actually went
+        // into the lote — that would mean producing more than was trillado.
+        $kgProductos = collect($validated['productos'])->sum(fn ($p) => is_numeric($p['kg']) ? (float) $p['kg'] : 0);
+
+        $kgIngresados = $this->editingTrillaId
+            ? (float) Trilla::findOrFail($this->editingTrillaId)->inventoryRecords()->sum('kg_usado')
+            : collect($this->kgUsado)->sum(fn ($v) => is_numeric($v) ? (float) $v : 0);
+
+        if ($kgProductos > $kgIngresados + 0.01) {
+            $this->addError('productos', 'La suma de los productos ('.number_format($kgProductos, 2, ',', '.').' kg) no puede superar los kg de las remisiones de este lote ('.number_format($kgIngresados, 2, ',', '.').' kg).');
+
+            return;
+        }
 
         if ($this->editingTrillaId) {
             $trilla = Trilla::findOrFail($this->editingTrillaId);

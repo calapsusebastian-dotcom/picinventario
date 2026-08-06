@@ -326,6 +326,7 @@
 
                 <div style="padding:0 24px 20px;">
                     <div class="section-label" style="margin:0 0 10px;">Productos que salen de esta trilla</div>
+                    @error('productos') <p style="color:var(--pic-danger);font-size:12.5px;margin:-4px 0 12px;">{{ $message }}</p> @enderror
 
                     @foreach ($productos as $i => $producto)
                         <div class="producto-row" wire:key="producto-{{ $producto['id'] ?? 'new-'.$i }}">
