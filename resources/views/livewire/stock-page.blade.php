@@ -69,7 +69,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Calidad</th><th class="num">Kg disponibles</th><th style="width:40px;"></th>
+                            <th>Calidad</th><th class="num">Kg disponibles</th><th class="num">Factor ponderado</th><th style="width:40px;"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -77,6 +77,7 @@
                             <tr class="data-row" wire:click="toggleExpandCalidad('{{ $fila['calidad'] }}')">
                                 <td>{{ $fila['calidad'] }}</td>
                                 <td class="mono num" style="font-weight:700;">{{ number_format($fila['kg_disponible'], 2, ',', '.') }}</td>
+                                <td class="mono num">{{ $fila['factor_ponderado'] !== null ? number_format($fila['factor_ponderado'], 1, ',', '.') : '—' }}</td>
                                 <td>
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--pic-ink-faint);transform:rotate({{ $expandedCalidad === $fila['calidad'] ? '180deg' : '0deg' }});transition:transform .12s;"><path d="M6 9l6 6 6-6"/></svg>
                                 </td>
@@ -84,7 +85,7 @@
 
                             @if ($expandedCalidad === $fila['calidad'])
                                 <tr class="detail-row">
-                                    <td colspan="3">
+                                    <td colspan="4">
                                         <div class="detail-block" style="grid-column:1 / -1;padding:0;overflow:hidden;">
                                             <div class="detail-block-head" style="padding:12px 14px 0;"><span class="role-dot" style="background:var(--pic-amber)"></span><span class="detail-title">Remisiones que aportan a esta calidad</span></div>
                                             @if ($fila['remisiones']->isNotEmpty())
@@ -116,7 +117,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="3">No hay materia prima que coincida con la búsqueda.</td></tr>
+                            <tr class="empty-row"><td colspan="4">No hay materia prima que coincida con la búsqueda.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

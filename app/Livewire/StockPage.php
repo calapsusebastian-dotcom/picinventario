@@ -91,9 +91,20 @@ class StockPage extends Component
                     ->filter(fn (InventoryRecord $r) => ($r->kgDisponible() ?? 0) > 0.001)
                     ->values();
 
+                $kgDisponible = (float) $remisiones->sum(fn (InventoryRecord $r) => $r->kgDisponible());
+
+                // Factor ponderado por kg disponible: cada remisión pesa
+                // según cuánto le queda, igual que en el tablero.
+                $conFactor = $remisiones->filter(fn (InventoryRecord $r) => (float) $r->factor_rec > 0);
+                $kgParaFactor = $conFactor->sum(fn (InventoryRecord $r) => $r->kgDisponible());
+                $factorPonderado = $kgParaFactor > 0
+                    ? $conFactor->sum(fn (InventoryRecord $r) => (float) $r->factor_rec * $r->kgDisponible()) / $kgParaFactor
+                    : null;
+
                 return [
                     'calidad' => $calidad,
-                    'kg_disponible' => (float) $remisiones->sum(fn (InventoryRecord $r) => $r->kgDisponible()),
+                    'kg_disponible' => $kgDisponible,
+                    'factor_ponderado' => $factorPonderado,
                     'remisiones' => $remisiones,
                 ];
             })
