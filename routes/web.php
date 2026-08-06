@@ -46,4 +46,8 @@ Route::view('informes', 'informes')
     ->middleware(['auth', 'verified'])
     ->name('informes');
 
+Route::view('stock', 'stock')
+    ->middleware(['auth', 'verified'])
+    ->name('stock');
+
 require __DIR__.'/auth.php';
