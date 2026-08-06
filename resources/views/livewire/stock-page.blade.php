@@ -69,7 +69,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Calidad</th><th>Kg disponibles</th><th></th>
+                            <th>Calidad</th><th class="num">Kg disponibles</th><th style="width:40px;"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,7 +92,7 @@
                                                     <table>
                                                         <thead>
                                                             <tr>
-                                                                <th>Remisión</th><th>Fecha</th><th>Cliente</th><th>Kg rec.</th><th>Kg disp.</th>
+                                                                <th>Remisión</th><th>Fecha</th><th>Cliente</th><th class="num">Kg rec.</th><th class="num">Kg disp.</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -130,7 +130,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Producto</th><th>Kg trillado</th><th>Kg despachado</th><th>Stock actual</th><th></th>
+                            <th>Producto</th><th class="num">Kg trillado</th><th class="num">Kg despachado</th><th class="num">Stock actual</th><th style="width:40px;"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -155,7 +155,7 @@
                                                     <table>
                                                         <thead>
                                                             <tr>
-                                                                <th>Lote</th><th>Kg</th><th>Factor</th><th>Remisiones de origen</th><th>Estado</th>
+                                                                <th>Lote</th><th class="num">Kg</th><th class="num">Factor</th><th>Remisiones de origen</th><th>Estado</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
