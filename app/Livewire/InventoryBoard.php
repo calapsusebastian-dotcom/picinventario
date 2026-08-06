@@ -6,6 +6,7 @@ use App\Livewire\Forms\InventoryRecordForm;
 use App\Models\Cliente;
 use App\Models\InventoryRecord;
 use App\Models\Producto;
+use App\Models\TrillaProducto;
 use App\Support\InventoryStages;
 use Livewire\Component;
 
@@ -181,9 +182,15 @@ class InventoryBoard extends Component
         // one has left to give, not an all-or-nothing per record.
         $kgRec = $allRecords->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
 
-        // Mirrors kg_recibidos: existencia drops by the same kg a remisión
-        // has given to trilla lotes, not just once it's fully consumed.
-        $existencia = $allRecords->sum(fn (InventoryRecord $r) => $r->existenciaDisponible() ?? 0);
+        // "Sin despachar": everything still physically in the warehouse,
+        // whether it's raw kg recibidos that hasn't been trillado yet or
+        // trilla output that hasn't left via despacho. Despacho is the only
+        // step that actually removes kg from the warehouse — trilla just
+        // transforms it — so this is total kg recibidos minus total kg
+        // despachado, not scoped to the pre-trilla stage like kg_recibidos above.
+        $kgRecibidosTotal = $allRecords->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
+        $kgDespachadoTotal = (float) TrillaProducto::whereNotNull('remision_despacho')->sum('kg');
+        $existencia = max(0, $kgRecibidosTotal - $kgDespachadoTotal);
 
         // Factor ponderado por kg disponibles (pendientes de trilla): cada
         // remisión pesa según cuánto le queda por trillar, no por su kg
