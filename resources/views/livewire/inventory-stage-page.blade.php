@@ -170,6 +170,7 @@
                         <div class="field"><label>Año</label><input wire:model="form.anio">@error('form.anio') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Mes</label>
                             <select wire:model="form.mes">
+                                <option value="">Selecciona...</option>
                                 <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option>
                                 <option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
                             </select>
@@ -196,7 +197,7 @@
                         </div>
                         <div class="field"><label>Kg enviados</label><input type="number" wire:model="form.kg_enviados">@error('form.kg_enviados') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Análisis enviado por</label>
-                            <select wire:model="form.analisis_enviado_por"><option>Jorge</option><option>Evelyn</option><option>Natalia</option></select>
+                            <select wire:model="form.analisis_enviado_por"><option value="">Selecciona...</option><option>Jorge</option><option>Evelyn</option><option>Natalia</option></select>
                             @error('form.analisis_enviado_por') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
                         <div></div>
@@ -214,7 +215,7 @@
                 @if ($stage === 'recepcion')
                     <div class="tab-panel active">
                         <div class="field"><label>Análisis recibido por</label>
-                            <select wire:model="form.analisis_recibido_por"><option>Bodega</option><option>Calidades</option><option>Trilladora</option></select>
+                            <select wire:model="form.analisis_recibido_por"><option value="">Selecciona...</option><option>Bodega</option><option>Calidades</option><option>Trilladora</option></select>
                             @error('form.analisis_recibido_por') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
                         <div class="field"><label>Kg recibidos</label><input type="number" wire:model="form.kg_recibidos">@error('form.kg_recibidos') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
