@@ -44,16 +44,86 @@
                     <div class="kpi-value">{{ number_format($totales['kg_stock'], 2, ',', '.') }} <small>kg</small></div>
                 </div>
             </div>
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:var(--pic-amber-soft);color:var(--pic-amber)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div>
+                    <div class="kpi-label">Materia prima (sin trillar)</div>
+                    <div class="kpi-value">{{ number_format($kgMateriaPrimaTotal, 2, ',', '.') }} <small>kg</small></div>
+                </div>
+            </div>
         </div>
 
         <div class="toolbar">
             <div class="search-box">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Buscar producto...">
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Buscar producto o calidad...">
             </div>
         </div>
 
-        <div class="section-label">Stock por producto</div>
+        <div class="section-label">Materia prima sin trillar</div>
+
+        <div class="table-card" style="margin-bottom:28px;">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Calidad</th><th>Kg disponibles</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($materiaPrima as $fila)
+                            <tr class="data-row" wire:click="toggleExpandCalidad('{{ $fila['calidad'] }}')">
+                                <td>{{ $fila['calidad'] }}</td>
+                                <td class="mono num" style="font-weight:700;">{{ number_format($fila['kg_disponible'], 2, ',', '.') }}</td>
+                                <td>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--pic-ink-faint);transform:rotate({{ $expandedCalidad === $fila['calidad'] ? '180deg' : '0deg' }});transition:transform .12s;"><path d="M6 9l6 6 6-6"/></svg>
+                                </td>
+                            </tr>
+
+                            @if ($expandedCalidad === $fila['calidad'])
+                                <tr class="detail-row">
+                                    <td colspan="3">
+                                        <div class="detail-block" style="grid-column:1 / -1;padding:0;overflow:hidden;">
+                                            <div class="detail-block-head" style="padding:12px 14px 0;"><span class="role-dot" style="background:var(--pic-amber)"></span><span class="detail-title">Remisiones que aportan a esta calidad</span></div>
+                                            @if ($fila['remisiones']->isNotEmpty())
+                                                <div class="table-scroll">
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Remisión</th><th>Fecha</th><th>Cliente</th><th>Kg rec.</th><th>Kg disp.</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($fila['remisiones'] as $r)
+                                                                <tr>
+                                                                    <td class="mono">{{ $r->remision ?: '—' }}</td>
+                                                                    <td class="mono">{{ $r->fecha?->format('Y-m-d') ?: '—' }}</td>
+                                                                    <td>{{ $r->cliente ?: '—' }}</td>
+                                                                    <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
+                                                                    <td class="mono num">{{ number_format($r->kgDisponible() ?? 0, 2, ',', '.') }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @else
+                                                <div class="detail-item" style="padding:0 14px 12px;"><span>Remisiones</span><span>Ninguna con kg disponibles</span></div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
+                        @empty
+                            <tr class="empty-row"><td colspan="3">No hay materia prima que coincida con la búsqueda.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-label">Stock por producto (trillado)</div>
 
         <div class="table-card">
             <div class="table-scroll">

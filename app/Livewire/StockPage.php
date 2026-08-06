@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\InventoryRecord;
 use App\Models\Producto;
 use App\Models\TrillaProducto;
 use Livewire\Component;
@@ -11,6 +12,7 @@ class StockPage extends Component
     public string $search = '';
 
     public ?string $expandedProducto = null;
+    public ?string $expandedCalidad = null;
 
     public function mount(): void
     {
@@ -20,6 +22,11 @@ class StockPage extends Component
     public function toggleExpand(string $nombre): void
     {
         $this->expandedProducto = $this->expandedProducto === $nombre ? null : $nombre;
+    }
+
+    public function toggleExpandCalidad(string $calidad): void
+    {
+        $this->expandedCalidad = $this->expandedCalidad === $calidad ? null : $calidad;
     }
 
     public function render()
@@ -66,9 +73,45 @@ class StockPage extends Component
             'kg_stock' => $filas->sum('kg_stock'),
         ];
 
+        // Materia prima: kg recibidos que aún no han pasado por trilla,
+        // agrupada por la misma calidad/producto del catálogo.
+        $records = InventoryRecord::with('trillas')->whereNotNull('kg_recibidos')->get();
+
+        $calidades = Producto::orderBy('nombre')->pluck('nombre')
+            ->merge($records->pluck('calidad_enviada'))
+            ->unique()
+            ->filter()
+            ->sort()
+            ->values();
+
+        $materiaPrima = $calidades
+            ->map(function (string $calidad) use ($records) {
+                $remisiones = $records
+                    ->where('calidad_enviada', $calidad)
+                    ->filter(fn (InventoryRecord $r) => ($r->kgDisponible() ?? 0) > 0.001)
+                    ->values();
+
+                return [
+                    'calidad' => $calidad,
+                    'kg_disponible' => (float) $remisiones->sum(fn (InventoryRecord $r) => $r->kgDisponible()),
+                    'remisiones' => $remisiones,
+                ];
+            })
+            ->filter(function (array $fila) {
+                if ($this->search === '') {
+                    return true;
+                }
+
+                return str_contains(mb_strtolower($fila['calidad']), mb_strtolower($this->search));
+            })
+            ->sortByDesc('kg_disponible')
+            ->values();
+
         return view('livewire.stock-page', [
             'filas' => $filas,
             'totales' => $totales,
+            'materiaPrima' => $materiaPrima,
+            'kgMateriaPrimaTotal' => $materiaPrima->sum('kg_disponible'),
         ]);
     }
 }
