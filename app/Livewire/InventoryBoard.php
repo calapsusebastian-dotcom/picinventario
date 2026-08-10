@@ -16,6 +16,8 @@ class InventoryBoard extends Component
     public string $search = '';
     public string $filterAnio = 'Todos';
     public string $filterEstatus = 'Todos';
+    public string $fechaDesde = '';
+    public string $fechaHasta = '';
 
     public ?int $expandedRow = null;
     public ?int $confirmDeleteId = null;
@@ -67,6 +69,12 @@ class InventoryBoard extends Component
         }
 
         $this->showDrawer = false;
+    }
+
+    public function limpiarFechas(): void
+    {
+        $this->fechaDesde = '';
+        $this->fechaHasta = '';
     }
 
     public function toggleExpand(int $id): void
@@ -144,6 +152,14 @@ class InventoryBoard extends Component
             }
 
             if ($this->filterEstatus !== 'Todos' && $record->estatus !== $this->filterEstatus) {
+                return false;
+            }
+
+            if ($this->fechaDesde !== '' && (! $record->fecha || $record->fecha->lt($this->fechaDesde))) {
+                return false;
+            }
+
+            if ($this->fechaHasta !== '' && (! $record->fecha || $record->fecha->gt($this->fechaHasta))) {
                 return false;
             }
 

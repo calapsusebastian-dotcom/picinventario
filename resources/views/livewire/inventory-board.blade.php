@@ -84,6 +84,13 @@
                 <option value="Todos">Todos los estatus</option>
                 <option>En bodega</option><option>Despachado</option><option>En tránsito</option><option>Reservado</option>
             </select>
+            <input type="date" wire:model.live="fechaDesde" title="Desde">
+            <input type="date" wire:model.live="fechaHasta" title="Hasta">
+            @if ($fechaDesde !== '' || $fechaHasta !== '')
+                <button type="button" class="icon-btn" title="Quitar filtro de fechas" wire:click="limpiarFechas">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            @endif
         </div>
 
         <div class="section-label">Tablero de registros</div>
