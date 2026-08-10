@@ -62,7 +62,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad enviada</th><th>Kg rec.</th><th>Kg disp.</th><th>Cliente</th><th>Estatus</th><th>Progreso</th>
+                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad enviada</th><th>Kg rec.</th><th>Kg disp.</th><th>Cliente</th><th>Estatus</th><th>Progreso</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,11 +92,16 @@
                                         <span class="progress-caption">{{ $done }}/5 roles</span>
                                     </div>
                                 </td>
+                                <td>
+                                    <button type="button" class="icon-btn danger" title="Reversar a bodega" wire:click.stop="reversarABodega({{ $r->id }})">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                    </button>
+                                </td>
                             </tr>
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="9">
+                                    <td colspan="10">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">General</span></div>
@@ -142,7 +147,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="9">No hay remisiones disponibles para trillar.</td></tr>
+                            <tr class="empty-row"><td colspan="10">No hay remisiones disponibles para trillar.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

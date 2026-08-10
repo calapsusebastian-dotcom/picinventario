@@ -90,6 +90,23 @@ class TrillaPage extends Component
         $this->expandedRow = $this->expandedRow === $id ? null : $id;
     }
 
+    /**
+     * Send a remisión back to Bodega's pool: it drops out of "available to
+     * trillar" here until Bodega releases it again. Any kg it already gave
+     * to a trilla lote stay as-is — this only affects what's left to give.
+     */
+    public function reversarABodega(int $id): void
+    {
+        InventoryRecord::whereKey($id)->update(['enviado_a_trilla' => false]);
+
+        $this->selected = array_values(array_diff($this->selected, [$id]));
+        unset($this->kgUsado[$id]);
+
+        if ($this->expandedRow === $id) {
+            $this->expandedRow = null;
+        }
+    }
+
     public function toggleExpandTrilla(int $id): void
     {
         $this->expandedTrilla = $this->expandedTrilla === $id ? null : $id;
