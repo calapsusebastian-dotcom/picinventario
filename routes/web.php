@@ -50,4 +50,8 @@ Route::view('stock', 'stock')
     ->middleware(['auth', 'verified'])
     ->name('stock');
 
+Route::view('bodega', 'bodega')
+    ->middleware(['auth', 'verified'])
+    ->name('bodega');
+
 require __DIR__.'/auth.php';

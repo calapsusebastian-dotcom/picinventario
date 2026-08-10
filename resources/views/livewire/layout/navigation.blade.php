@@ -72,6 +72,12 @@ new class extends Component
                     {{ $link['label'] }}
                 </x-sidebar-link>
             @endforeach
+            @if (auth()->user()->isAdmin())
+                <x-sidebar-link :href="route('bodega')" :active="request()->routeIs('bodega')" wire:navigate>
+                    <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
+                    {{ __('Bodega') }}
+                </x-sidebar-link>
+            @endif
             @if ($this->canAccessModule('trilla'))
                 <x-sidebar-link :href="route('trilla')" :active="request()->routeIs('trilla')" wire:navigate>
                     <x-slot name="icon"><x-nav-icon name="trilla" /></x-slot>
@@ -167,6 +173,12 @@ new class extends Component
                         {{ $link['label'] }}
                     </x-sidebar-link>
                 @endforeach
+                @if (auth()->user()->isAdmin())
+                    <x-sidebar-link :href="route('bodega')" :active="request()->routeIs('bodega')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
+                        {{ __('Bodega') }}
+                    </x-sidebar-link>
+                @endif
                 @if ($this->canAccessModule('trilla'))
                     <x-sidebar-link :href="route('trilla')" :active="request()->routeIs('trilla')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="trilla" /></x-slot>
