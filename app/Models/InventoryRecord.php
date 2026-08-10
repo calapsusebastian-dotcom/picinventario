@@ -14,7 +14,7 @@ class InventoryRecord extends Model
         'analisis_recibido_por', 'kg_recibidos',
         'as_rec', 'pas_rec', 'pg_rec', 'broca_rec', 'humedad_rec', 'factor_rec', 'taza_rec', 'puntaje_taza_rec',
         'destino', 'cliente', 'negocio', 'estatus', 'existencia',
-        'imov',
+        'imov', 'enviado_a_trilla',
     ];
 
     protected $casts = [
@@ -23,6 +23,7 @@ class InventoryRecord extends Model
         'tulas' => 'integer',
         'costal' => 'integer',
         'imov' => 'integer',
+        'enviado_a_trilla' => 'boolean',
         'kg_enviados' => 'decimal:2',
         'as_env' => 'decimal:2',
         'pas_env' => 'decimal:2',

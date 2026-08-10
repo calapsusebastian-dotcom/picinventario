@@ -265,13 +265,14 @@ class TrillaPage extends Component
     public function render()
     {
         $available = InventoryRecord::with('trillas')
+            ->where('enviado_a_trilla', true)
             ->orderByDesc('fecha')
             ->orderByDesc('id')
             ->get()
             ->filter(function (InventoryRecord $record) {
-                // Still shown while pending recepción (kg_recibidos null);
-                // otherwise only while it has leftover kg to give.
-                if ($record->kg_recibidos !== null && $record->kgDisponible() <= 0.001) {
+                // Only while it still has leftover kg to give — once fully
+                // trillada it drops off, even though it was sent from bodega.
+                if (($record->kgDisponible() ?? 0) <= 0.001) {
                     return false;
                 }
 

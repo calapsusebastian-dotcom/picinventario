@@ -12,6 +12,9 @@ class BodegaPage extends Component
 
     public ?int $expandedRow = null;
 
+    /** @var array<int, int|string> Selected InventoryRecord ids to release to Trilla. */
+    public array $selected = [];
+
     public function mount(): void
     {
         abort_unless(auth()->user()->isAdmin(), 403);
@@ -20,6 +23,22 @@ class BodegaPage extends Component
     public function toggleExpand(int $id): void
     {
         $this->expandedRow = $this->expandedRow === $id ? null : $id;
+    }
+
+    /**
+     * Release the selected remisiones into Trilla's pool. Trilla itself
+     * still decides how much of each to actually use and what comes out —
+     * this just makes them visible/selectable over there.
+     */
+    public function enviarATrilla(): void
+    {
+        if (empty($this->selected)) {
+            return;
+        }
+
+        InventoryRecord::whereIn('id', $this->selected)->update(['enviado_a_trilla' => true]);
+
+        $this->selected = [];
     }
 
     public function render()
