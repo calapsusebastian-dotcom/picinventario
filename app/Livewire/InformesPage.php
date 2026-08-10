@@ -37,7 +37,7 @@ class InformesPage extends Component
                 }
 
                 $haystack = mb_strtolower(implode(' ', [
-                    $r->remision, $r->cliente, $r->destino, $r->calidad_enviada,
+                    $r->remision, $r->cliente, $r->destino, $r->calidad_enviada, $r->ubicacion,
                 ]));
 
                 return str_contains($haystack, mb_strtolower($this->search));

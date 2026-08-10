@@ -245,7 +245,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th>Kg env.</th><th>Kg rec.</th><th>Kg trillado</th><th>Estatus</th>
+                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th>Ubicación</th><th>Kg env.</th><th>Kg rec.</th><th>Kg trillado</th><th>Estatus</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -259,13 +259,14 @@
                                 <td class="mono">{{ $r->remision ?: '—' }}</td>
                                 <td>{{ $r->calidad_enviada ?: '—' }}</td>
                                 <td>{{ $r->cliente ?: '—' }}</td>
+                                <td>{{ $r->ubicacion ?: '—' }}</td>
                                 <td class="mono num">{{ $r->kg_enviados ?: '0' }}</td>
                                 <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
                                 <td class="mono num">{{ $kgTrillado > 0 ? number_format($kgTrillado, 2, ',', '.') : '—' }}</td>
                                 <td><span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ $r->estatus }}</span></td>
                             </tr>
                         @empty
-                            <tr class="empty-row"><td colspan="8">No hay registros que coincidan con la búsqueda.</td></tr>
+                            <tr class="empty-row"><td colspan="9">No hay registros que coincidan con la búsqueda.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
