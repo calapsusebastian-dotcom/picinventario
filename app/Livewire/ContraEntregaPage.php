@@ -35,9 +35,12 @@ class ContraEntregaPage extends Component
         return (float) $rec - (float) $env;
     }
 
-    public function render()
+    /**
+     * @return \Illuminate\Support\Collection<int, array>
+     */
+    private function buildComparaciones(): \Illuminate\Support\Collection
     {
-        $comparaciones = InventoryRecord::query()
+        return InventoryRecord::query()
             ->whereNotNull('kg_enviados')
             ->whereNotNull('kg_recibidos')
             ->orderByDesc('fecha')
@@ -73,6 +76,63 @@ class ContraEntregaPage extends Component
                 ];
             })
             ->values();
+    }
+
+    /**
+     * Streams the currently filtered comparison as a CSV file (Excel opens
+     * these natively) — no extra package needed for a plain export like this.
+     */
+    public function exportar()
+    {
+        $comparaciones = $this->buildComparaciones();
+
+        $filename = 'contra-entrega-'.now()->format('Y-m-d_His').'.csv';
+
+        return response()->streamDownload(function () use ($comparaciones) {
+            $out = fopen('php://output', 'w');
+
+            // BOM so Excel detects UTF-8 and renders tildes/ñ correctly.
+            fwrite($out, "\xEF\xBB\xBF");
+
+            fputcsv($out, [
+                'Fecha', 'Remisión', 'Cliente', 'Ubicación', 'Calidad',
+                'Kg enviados', 'Kg recibidos', 'Diferencia kg', 'Diferencia %',
+                'Factor envío', 'Factor recepción', 'Diferencia factor',
+                'Almendra sana envío', 'Almendra sana recepción', 'Diferencia almendra sana',
+                'Pasilla envío', 'Pasilla recepción', 'Diferencia pasilla',
+                'Primer grupo envío', 'Primer grupo recepción', 'Diferencia primer grupo',
+                'Broca envío', 'Broca recepción', 'Diferencia broca',
+                'Humedad envío', 'Humedad recepción', 'Diferencia humedad',
+                'Puntaje taza envío', 'Puntaje taza recepción', 'Diferencia puntaje taza',
+                'Taza envío', 'Taza recepción',
+            ]);
+
+            foreach ($comparaciones as $c) {
+                $r = $c['record'];
+
+                fputcsv($out, [
+                    $r->fecha?->format('Y-m-d'), $r->remision, $r->cliente, $r->ubicacion, $r->calidad_enviada,
+                    $r->kg_enviados, $r->kg_recibidos, $c['diff_kg'], $c['diff_kg_pct'],
+                    $r->factor_env, $r->factor_rec, $c['diff_factor'],
+                    $r->as_env, $r->as_rec, $c['diff_as'],
+                    $r->pas_env, $r->pas_rec, $c['diff_pas'],
+                    $r->pg_env, $r->pg_rec, $c['diff_pg'],
+                    $r->broca_env, $r->broca_rec, $c['diff_broca'],
+                    $r->humedad_env, $r->humedad_rec, $c['diff_humedad'],
+                    $r->puntaje_taza_env, $r->puntaje_taza_rec, $c['diff_puntaje_taza'],
+                    $r->taza_env, $r->taza_rec,
+                ]);
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    public function render()
+    {
+        $comparaciones = $this->buildComparaciones();
 
         $kgEnviadosTotal = (float) $comparaciones->sum(fn (array $c) => (float) $c['record']->kg_enviados);
         $kgRecibidosTotal = (float) $comparaciones->sum(fn (array $c) => (float) $c['record']->kg_recibidos);
