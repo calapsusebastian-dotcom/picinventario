@@ -65,6 +65,10 @@ new class extends Component
                     <x-slot name="icon"><x-nav-icon name="informes" /></x-slot>
                     {{ __('Informes') }}
                 </x-sidebar-link>
+                <x-sidebar-link :href="route('contra-entrega')" :active="request()->routeIs('contra-entrega')" wire:navigate>
+                    <x-slot name="icon"><x-nav-icon name="contra-entrega" /></x-slot>
+                    {{ __('Contra entrega') }}
+                </x-sidebar-link>
             @endif
             @foreach ($this->stageLinks() as $link)
                 <x-sidebar-link :href="route('inventario.stage', $link['stage'])" :active="request()->routeIs('inventario.stage') && request()->route('stage') === $link['stage']" wire:navigate>
@@ -169,6 +173,10 @@ new class extends Component
                     <x-sidebar-link :href="route('informes')" :active="request()->routeIs('informes')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="informes" /></x-slot>
                         {{ __('Informes') }}
+                    </x-sidebar-link>
+                    <x-sidebar-link :href="route('contra-entrega')" :active="request()->routeIs('contra-entrega')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="contra-entrega" /></x-slot>
+                        {{ __('Contra entrega') }}
                     </x-sidebar-link>
                 @endif
                 @foreach ($this->stageLinks() as $link)

@@ -50,6 +50,10 @@ Route::view('informes', 'informes')
     ->middleware(['auth', 'verified'])
     ->name('informes');
 
+Route::view('contra-entrega', 'contra-entrega')
+    ->middleware(['auth', 'verified'])
+    ->name('contra-entrega');
+
 Route::view('stock', 'stock')
     ->middleware(['auth', 'verified'])
     ->name('stock');
