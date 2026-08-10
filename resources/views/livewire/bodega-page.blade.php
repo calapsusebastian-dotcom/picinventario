@@ -82,7 +82,7 @@
                             @endphp
                             <tr class="data-row" wire:key="mov-{{ $r->id }}" wire:click="toggleExpand({{ $r->id }})">
                                 <td class="checkbox-cell" @click.stop="null">
-                                    @if ($mov['saldo'] > 0.001)
+                                    @if ($mov['saldo'] > 0.001 && ! $r->enviado_a_trilla)
                                         <input type="checkbox" wire:model.live="selected" value="{{ $r->id }}">
                                     @endif
                                 </td>
