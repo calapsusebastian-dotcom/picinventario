@@ -45,14 +45,30 @@ new class extends Component
     }
 }; ?>
 
-<div class="contents" x-data="{ open: false }">
+<div class="contents" x-data="{ open: false, collapsed: false }">
     {{-- Desktop sidebar --}}
-    <aside class="hidden sm:flex sm:flex-col sm:w-64 sm:shrink-0 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 min-h-screen">
-        <div class="flex items-center gap-3 h-16 px-5 border-b border-gray-100 dark:border-gray-700">
-            <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-3">
-                <x-application-logo class="h-9 w-9" />
-                <span class="font-semibold text-gray-800 dark:text-gray-100">Bodega PIC</span>
+    <aside
+        class="hidden sm:flex sm:flex-col sm:shrink-0 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 min-h-screen transition-[width] duration-150"
+        x-data="{ collapsed: localStorage.getItem('pic_sidebar_collapsed') === '1' }"
+        x-init="$watch('collapsed', value => localStorage.setItem('pic_sidebar_collapsed', value ? '1' : '0'))"
+        x-bind:class="collapsed ? 'sm:w-[76px]' : 'sm:w-64'"
+    >
+        <div class="flex items-center h-16 px-5 border-b border-gray-100 dark:border-gray-700" x-bind:class="collapsed ? 'justify-center px-0' : 'justify-between'">
+            <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-3 min-w-0">
+                <x-application-logo class="h-9 w-9 shrink-0" />
+                <span x-show="!collapsed" class="font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">Bodega PIC</span>
             </a>
+        </div>
+
+        <div class="px-3 pt-3">
+            <button
+                type="button"
+                @click="collapsed = ! collapsed"
+                x-bind:title="collapsed ? 'Mostrar menú' : 'Ocultar menú'"
+                class="flex items-center justify-center w-full h-9 rounded-lg border border-gray-100 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            >
+                <svg class="h-4 w-4 transition-transform duration-150" x-bind:class="{ 'rotate-180': collapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
         </div>
 
         <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -124,8 +140,8 @@ new class extends Component
         <div class="border-t border-gray-100 dark:border-gray-700 p-3">
             <x-dropdown align="left" width="56">
                 <x-slot name="trigger">
-                    <button class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition ease-in-out duration-150">
-                        <div class="flex-1 text-start truncate" x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
+                    <button class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition ease-in-out duration-150" x-bind:class="{ 'justify-center px-2': collapsed }">
+                        <div class="flex-1 text-start truncate" x-show="!collapsed" x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
                         <svg class="fill-current h-4 w-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                         </svg>
