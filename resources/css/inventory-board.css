@@ -12,7 +12,7 @@
   background:var(--pic-bg);color:var(--pic-ink);font-family:var(--pic-font);-webkit-font-smoothing:antialiased;
 }
 .pic-board *{box-sizing:border-box;}
-.pic-board .wrap{max-width:1240px;margin:0 auto;padding:28px 24px 60px;}
+.pic-board .wrap{max-width:1680px;margin:0 auto;padding:28px 24px 60px;}
 
 /* topbar */
 .pic-board .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px;}
