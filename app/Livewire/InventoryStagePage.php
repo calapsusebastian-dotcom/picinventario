@@ -6,6 +6,7 @@ use App\Livewire\Forms\InventoryRecordForm;
 use App\Models\Cliente;
 use App\Models\InventoryRecord;
 use App\Models\Producto;
+use App\Models\Ubicacion;
 use App\Support\InventoryStages;
 use Livewire\Component;
 
@@ -98,6 +99,7 @@ class InventoryStagePage extends Component
             'stageRoleLabel' => InventoryStages::roleLabel($this->stage),
             'productos' => Producto::orderBy('nombre')->pluck('nombre'),
             'clientes' => Cliente::orderBy('nombre')->pluck('nombre'),
+            'ubicaciones' => Ubicacion::orderBy('nombre')->pluck('nombre'),
         ]);
     }
 }

@@ -117,6 +117,7 @@
                             <div class="detail-item"><span>Mes</span><span>{{ $form->mes ?: '—' }}</span></div>
                             <div class="detail-item"><span>N° tulas</span><span>{{ $form->tulas ?: '—' }}</span></div>
                             <div class="detail-item"><span>N° costal</span><span>{{ $form->costal ?: '—' }}</span></div>
+                            <div class="detail-item"><span>Ubicación</span><span>{{ $form->ubicacion ?: '—' }}</span></div>
                         </div>
 
                         @if (in_array($stage, ['recepcion', 'destino', 'imov']))
@@ -180,6 +181,16 @@
                         <div class="field"><label>Remisión</label><input wire:model="form.remision" placeholder="R-0000">@error('form.remision') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>N° tulas</label><input type="number" wire:model="form.tulas">@error('form.tulas') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>N° costal</label><input type="number" wire:model="form.costal">@error('form.costal') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field">
+                            <label>Ubicación</label>
+                            <select wire:model="form.ubicacion">
+                                <option value="">Selecciona...</option>
+                                @foreach ($ubicaciones as $u)
+                                    <option value="{{ $u }}">{{ $u }}</option>
+                                @endforeach
+                            </select>
+                            @error('form.ubicacion') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                        </div>
                     </div>
                 @endif
 

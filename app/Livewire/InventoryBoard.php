@@ -7,6 +7,7 @@ use App\Models\Cliente;
 use App\Models\InventoryRecord;
 use App\Models\Producto;
 use App\Models\TrillaProducto;
+use App\Models\Ubicacion;
 use App\Support\InventoryStages;
 use Livewire\Component;
 
@@ -170,6 +171,7 @@ class InventoryBoard extends Component
             'sections' => $sections,
             'productos' => Producto::orderBy('nombre')->pluck('nombre'),
             'clientes' => Cliente::orderBy('nombre')->pluck('nombre'),
+            'ubicaciones' => Ubicacion::orderBy('nombre')->pluck('nombre'),
         ]);
     }
 

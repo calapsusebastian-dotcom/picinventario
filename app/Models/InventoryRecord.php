@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class InventoryRecord extends Model
 {
     protected $fillable = [
-        'anio', 'mes', 'fecha', 'remision', 'tulas', 'costal',
+        'anio', 'mes', 'fecha', 'remision', 'tulas', 'costal', 'ubicacion',
         'calidad_enviada', 'kg_enviados', 'analisis_enviado_por',
         'as_env', 'pas_env', 'pg_env', 'broca_env', 'humedad_env', 'factor_env', 'taza_env', 'puntaje_taza_env',
         'analisis_recibido_por', 'kg_recibidos',

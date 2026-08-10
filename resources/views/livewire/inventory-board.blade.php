@@ -175,6 +175,7 @@
                                                 <div class="detail-item"><span>Kg enviados</span><span>{{ $r->kg_enviados ? $r->kg_enviados.' kg' : '—' }}</span></div>
                                                 <div class="detail-item"><span>N° tulas</span><span>{{ $r->tulas ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>N° costal</span><span>{{ $r->costal ?: '—' }}</span></div>
+                                                <div class="detail-item"><span>Ubicación</span><span>{{ $r->ubicacion ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Almendra sana</span><span>{{ $r->as_env ? $r->as_env.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Pasilla</span><span>{{ $r->pas_env ? $r->pas_env.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Primer grupo</span><span>{{ $r->pg_env ? $r->pg_env.'%' : '—' }}</span></div>
@@ -273,6 +274,16 @@
                     <div class="field"><label>Remisión</label><input wire:model.live="form.remision" placeholder="R-0000">@error('form.remision') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     <div class="field"><label>N° tulas</label><input type="number" wire:model="form.tulas">@error('form.tulas') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     <div class="field"><label>N° costal</label><input type="number" wire:model="form.costal">@error('form.costal') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                    <div class="field">
+                        <label>Ubicación</label>
+                        <select wire:model="form.ubicacion">
+                            <option value="">Selecciona...</option>
+                            @foreach ($ubicaciones as $u)
+                                <option value="{{ $u }}">{{ $u }}</option>
+                            @endforeach
+                        </select>
+                        @error('form.ubicacion') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                    </div>
                 </div>
 
                 <div class="tab-panel{{ $activeSection === 1 ? ' active' : '' }}">

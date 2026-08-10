@@ -16,6 +16,7 @@ $paths = [
     'clientes' => '<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h1"/><path d="M14 9h1"/><path d="M9 13h1"/><path d="M14 13h1"/><path d="M9 21v-4h6v4"/>',
     'stock' => '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
     'bodega' => '<path d="M3 21V10l9-6 9 6v11"/><path d="M9 21v-7h6v7"/><path d="M3 10h18"/>',
+    'ubicaciones' => '<path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
 ];
 @endphp
 

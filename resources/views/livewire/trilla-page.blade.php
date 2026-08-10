@@ -109,6 +109,7 @@
                                                 <div class="detail-item"><span>Mes</span><span>{{ $r->mes ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>N° tulas</span><span>{{ $r->tulas ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>N° costal</span><span>{{ $r->costal ?: '—' }}</span></div>
+                                                <div class="detail-item"><span>Ubicación</span><span>{{ $r->ubicacion ?: '—' }}</span></div>
                                             </div>
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío · {{ $r->analisis_enviado_por ?: '—' }}</span></div>

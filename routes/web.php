@@ -42,6 +42,10 @@ Route::view('clientes', 'clientes')
     ->middleware(['auth', 'verified'])
     ->name('clientes');
 
+Route::view('ubicaciones', 'ubicaciones')
+    ->middleware(['auth', 'verified'])
+    ->name('ubicaciones');
+
 Route::view('informes', 'informes')
     ->middleware(['auth', 'verified'])
     ->name('informes');

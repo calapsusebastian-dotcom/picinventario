@@ -33,6 +33,7 @@ class InventoryRecordForm extends Form
     public ?string $remision = '';
     public ?string $tulas = '';
     public ?string $costal = '';
+    public ?string $ubicacion = '';
 
     // Envio
     public ?string $calidad_enviada = '';
@@ -78,6 +79,7 @@ class InventoryRecordForm extends Form
             'remision' => ['nullable', 'string', 'max:255'],
             'tulas' => ['nullable', 'integer'],
             'costal' => ['nullable', 'integer'],
+            'ubicacion' => ['nullable', 'string', 'max:255'],
 
             'calidad_enviada' => ['nullable', 'string', 'max:255'],
             'kg_enviados' => ['nullable', 'numeric'],
@@ -148,7 +150,7 @@ class InventoryRecordForm extends Form
     {
         return [
             'anio' => 'año', 'mes' => 'mes', 'fecha' => 'fecha', 'remision' => 'remisión',
-            'tulas' => 'N° tulas', 'costal' => 'N° costal',
+            'tulas' => 'N° tulas', 'costal' => 'N° costal', 'ubicacion' => 'ubicación',
 
             'calidad_enviada' => 'calidad enviada', 'kg_enviados' => 'kg enviados', 'analisis_enviado_por' => 'análisis enviado por',
             'as_env' => 'almendra sana', 'pas_env' => 'pasilla', 'pg_env' => 'primer grupo', 'broca_env' => 'broca',
@@ -172,6 +174,7 @@ class InventoryRecordForm extends Form
         $this->remision = $record->remision;
         $this->tulas = (string) $record->tulas;
         $this->costal = (string) $record->costal;
+        $this->ubicacion = $record->ubicacion;
 
         $this->calidad_enviada = $record->calidad_enviada;
         $this->kg_enviados = (string) $record->kg_enviados;

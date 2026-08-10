@@ -105,6 +105,10 @@ new class extends Component
                         <x-slot name="icon"><x-nav-icon name="clientes" /></x-slot>
                         {{ __('Clientes') }}
                     </x-sidebar-link>
+                    <x-sidebar-link :href="route('ubicaciones')" :active="request()->routeIs('ubicaciones')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="ubicaciones" /></x-slot>
+                        {{ __('Ubicaciones') }}
+                    </x-sidebar-link>
                     <x-sidebar-link :href="route('stock')" :active="request()->routeIs('stock')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="stock" /></x-slot>
                         {{ __('Stock') }}
@@ -203,6 +207,10 @@ new class extends Component
                     <x-sidebar-link :href="route('clientes')" :active="request()->routeIs('clientes')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="clientes" /></x-slot>
                         {{ __('Clientes') }}
+                    </x-sidebar-link>
+                    <x-sidebar-link :href="route('ubicaciones')" :active="request()->routeIs('ubicaciones')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="ubicaciones" /></x-slot>
+                        {{ __('Ubicaciones') }}
                     </x-sidebar-link>
                     <x-sidebar-link :href="route('stock')" :active="request()->routeIs('stock')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="stock" /></x-slot>
