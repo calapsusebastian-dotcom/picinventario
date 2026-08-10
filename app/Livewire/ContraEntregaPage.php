@@ -48,7 +48,7 @@ class ContraEntregaPage extends Component
                     return true;
                 }
 
-                $haystack = mb_strtolower(implode(' ', [$r->remision, $r->cliente, $r->calidad_enviada]));
+                $haystack = mb_strtolower(implode(' ', [$r->remision, $r->cliente, $r->calidad_enviada, $r->ubicacion]));
 
                 return str_contains($haystack, mb_strtolower($this->search));
             })

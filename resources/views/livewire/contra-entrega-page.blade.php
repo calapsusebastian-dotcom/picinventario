@@ -86,7 +86,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Fecha</th><th>Remisión</th><th>Cliente</th>
+                            <th>Fecha</th><th>Remisión</th><th>Cliente</th><th>Ubicación</th>
                             <th class="num">Kg env.</th><th class="num">Kg rec.</th><th class="num">Dif. kg</th><th class="num">Dif. %</th>
                             <th class="num">Factor env.</th><th class="num">Factor rec.</th><th class="num">Dif. factor</th>
                         </tr>
@@ -98,6 +98,7 @@
                                 <td class="mono">{{ $r->fecha?->format('Y-m-d') ?? '—' }}</td>
                                 <td class="mono">{{ $r->remision ?: '—' }}</td>
                                 <td>{{ $r->cliente ?: '—' }}</td>
+                                <td>{{ $r->ubicacion ?: '—' }}</td>
                                 <td class="mono num">{{ $fmt($r->kg_enviados) }}</td>
                                 <td class="mono num">{{ $fmt($r->kg_recibidos) }}</td>
                                 <td class="mono num" style="font-weight:700;color:{{ $diffColor($c['diff_kg']) }}">{{ $fmtDiff($c['diff_kg']) }}</td>
@@ -109,7 +110,7 @@
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="10">
+                                    <td colspan="11">
                                         <div class="table-scroll">
                                             <table>
                                                 <thead>
@@ -187,7 +188,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="10">No hay remisiones con Envío y Recepción completos para comparar.</td></tr>
+                            <tr class="empty-row"><td colspan="11">No hay remisiones con Envío y Recepción completos para comparar.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
