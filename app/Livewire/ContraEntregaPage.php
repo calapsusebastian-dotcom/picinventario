@@ -9,11 +9,20 @@ class ContraEntregaPage extends Component
 {
     public string $search = '';
 
+    public string $fechaDesde = '';
+    public string $fechaHasta = '';
+
     public ?int $expandedRow = null;
 
     public function mount(): void
     {
         abort_unless(auth()->user()->isAdmin(), 403);
+    }
+
+    public function limpiarFechas(): void
+    {
+        $this->fechaDesde = '';
+        $this->fechaHasta = '';
     }
 
     public function toggleExpand(int $id): void
@@ -43,6 +52,8 @@ class ContraEntregaPage extends Component
         return InventoryRecord::query()
             ->whereNotNull('kg_enviados')
             ->whereNotNull('kg_recibidos')
+            ->when($this->fechaDesde !== '', fn ($q) => $q->whereDate('fecha', '>=', $this->fechaDesde))
+            ->when($this->fechaHasta !== '', fn ($q) => $q->whereDate('fecha', '<=', $this->fechaHasta))
             ->orderByDesc('fecha')
             ->orderByDesc('id')
             ->get()

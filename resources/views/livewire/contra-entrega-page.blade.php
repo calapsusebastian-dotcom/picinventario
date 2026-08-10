@@ -81,6 +81,13 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Buscar por remisión, cliente o calidad...">
             </div>
+            <input type="date" wire:model.live="fechaDesde" title="Desde">
+            <input type="date" wire:model.live="fechaHasta" title="Hasta">
+            @if ($fechaDesde !== '' || $fechaHasta !== '')
+                <button type="button" class="icon-btn" title="Quitar filtro de fechas" wire:click="limpiarFechas">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            @endif
         </div>
 
         <div class="section-label">Envío vs. Recepción ({{ $comparaciones->count() }})</div>
