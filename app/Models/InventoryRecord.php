@@ -15,6 +15,7 @@ class InventoryRecord extends Model
         'as_rec', 'pas_rec', 'pg_rec', 'broca_rec', 'humedad_rec', 'factor_rec', 'taza_rec', 'puntaje_taza_rec',
         'destino', 'cliente', 'negocio', 'estatus', 'existencia',
         'imov', 'enviado_a_trilla',
+        'enviado_a_despacho', 'remision_despacho', 'fecha_despacho',
     ];
 
     protected $casts = [
@@ -24,6 +25,8 @@ class InventoryRecord extends Model
         'costal' => 'integer',
         'imov' => 'integer',
         'enviado_a_trilla' => 'boolean',
+        'enviado_a_despacho' => 'boolean',
+        'fecha_despacho' => 'date',
         'kg_enviados' => 'decimal:2',
         'as_env' => 'decimal:2',
         'pas_env' => 'decimal:2',
@@ -80,6 +83,15 @@ class InventoryRecord extends Model
         }
 
         return max(0, (float) $this->existencia - $this->kgUsadoEnTrillas());
+    }
+
+    /**
+     * True once this remisión has been dispatched directly (skipping
+     * trilla) via a remisión de despacho of its own.
+     */
+    public function isDespachadoDirecto(): bool
+    {
+        return (bool) $this->remision_despacho;
     }
 
     protected function kgUsadoEnTrillas(): float

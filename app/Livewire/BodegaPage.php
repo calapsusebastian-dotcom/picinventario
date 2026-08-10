@@ -41,6 +41,21 @@ class BodegaPage extends Component
         $this->selected = [];
     }
 
+    /**
+     * Release the selected remisiones straight to Despacho, skipping trilla
+     * entirely — for materia prima that goes out as-is.
+     */
+    public function enviarADespacho(): void
+    {
+        if (empty($this->selected)) {
+            return;
+        }
+
+        InventoryRecord::whereIn('id', $this->selected)->update(['enviado_a_despacho' => true]);
+
+        $this->selected = [];
+    }
+
     public function render()
     {
         $records = InventoryRecord::with('trillas')

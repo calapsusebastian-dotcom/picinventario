@@ -88,7 +88,9 @@ class StockPage extends Component
             ->map(function (string $calidad) use ($records) {
                 $remisiones = $records
                     ->where('calidad_enviada', $calidad)
-                    ->filter(fn (InventoryRecord $r) => ($r->kgDisponible() ?? 0) > 0.001)
+                    // Materia prima ya enviada directo a despacho no va a pasar
+                    // por trilla — no debe seguir contando como disponible aquí.
+                    ->filter(fn (InventoryRecord $r) => ! $r->enviado_a_despacho && ($r->kgDisponible() ?? 0) > 0.001)
                     ->values();
 
                 $kgDisponible = (float) $remisiones->sum(fn (InventoryRecord $r) => $r->kgDisponible());

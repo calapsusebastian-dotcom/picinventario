@@ -71,7 +71,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Trilla</th>
+                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Trilla</th><th>Despacho</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -82,7 +82,7 @@
                             @endphp
                             <tr class="data-row" wire:key="mov-{{ $r->id }}" wire:click="toggleExpand({{ $r->id }})">
                                 <td class="checkbox-cell" @click.stop="null">
-                                    @if ($mov['saldo'] > 0.001 && ! $r->enviado_a_trilla)
+                                    @if ($mov['saldo'] > 0.001 && ! $r->enviado_a_trilla && ! $r->enviado_a_despacho)
                                         <input type="checkbox" wire:model.live="selected" value="{{ $r->id }}">
                                     @endif
                                 </td>
@@ -101,11 +101,18 @@
                                         <span class="badge" style="background:var(--pic-line);color:var(--pic-ink-soft);">Pendiente</span>
                                     @endif
                                 </td>
+                                <td>
+                                    @if ($r->enviado_a_despacho)
+                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Enviada</span>
+                                    @else
+                                        <span class="badge" style="background:var(--pic-line);color:var(--pic-ink-soft);">Pendiente</span>
+                                    @endif
+                                </td>
                             </tr>
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="10">
+                                    <td colspan="11">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">General</span></div>
@@ -145,7 +152,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="10">No hay remisiones que coincidan con la búsqueda.</td></tr>
+                            <tr class="empty-row"><td colspan="11">No hay remisiones que coincidan con la búsqueda.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -158,6 +165,10 @@
                 <button type="button" class="btn-primary" wire:click="enviarATrilla">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
                     Enviar a trilla
+                </button>
+                <button type="button" class="btn-primary" style="background:var(--pic-accent-deep);" wire:click="enviarADespacho">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    Enviar a despacho
                 </button>
             </div>
         @endif

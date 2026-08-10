@@ -116,7 +116,11 @@
                                 <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
                                 <td>
                                     @php $saldo = $r->kgDisponible(); @endphp
-                                    @if ($saldo === null || $saldo <= 0.001)
+                                    @if ($r->isDespachadoDirecto())
+                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachado</span>
+                                    @elseif ($r->enviado_a_despacho)
+                                        <span class="badge" style="background:#E1EFFB;color:#1D5FA8;">En despacho</span>
+                                    @elseif ($saldo === null || $saldo <= 0.001)
                                         @if ($r->trillas->isNotEmpty())
                                             <span class="badge" style="background:var(--pic-accent-soft);color:var(--pic-accent-deep)">Trillado</span>
                                         @else

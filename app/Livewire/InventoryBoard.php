@@ -177,15 +177,17 @@ class InventoryBoard extends Component
     {
         $kgEnv = $allRecords->sum(fn (InventoryRecord $r) => (float) $r->kg_enviados);
 
-        // Kg that have gone into a trilla lote no longer count here — a
-        // remisión can be partially trillada, so this sums whatever kg each
-        // one has left to give, not an all-or-nothing per record. Split by
-        // enviado_a_trilla so it's clear how much is still sitting in
-        // Bodega versus already released to Trilla's pool.
-        $kgEnBodega = $allRecords
+        // Kg that have gone into a trilla lote, or straight to despacho
+        // skipping trilla, no longer count here — a remisión can be
+        // partially trillada, so this sums whatever kg each one has left to
+        // give, not an all-or-nothing per record. Split by enviado_a_trilla
+        // so it's clear how much is still sitting in Bodega versus already
+        // released to Trilla's pool.
+        $enBodegaOTrilla = $allRecords->filter(fn (InventoryRecord $r) => ! $r->enviado_a_despacho);
+        $kgEnBodega = $enBodegaOTrilla
             ->filter(fn (InventoryRecord $r) => ! $r->enviado_a_trilla)
             ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
-        $kgEnTrilla = $allRecords
+        $kgEnTrilla = $enBodegaOTrilla
             ->filter(fn (InventoryRecord $r) => $r->enviado_a_trilla)
             ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
         $kgRec = $kgEnBodega + $kgEnTrilla;
@@ -195,15 +197,23 @@ class InventoryBoard extends Component
         // trilla output that hasn't left via despacho. Despacho is the only
         // step that actually removes kg from the warehouse — trilla just
         // transforms it — so this is total kg recibidos minus total kg
-        // despachado, not scoped to the pre-trilla stage like kg_recibidos above.
+        // despachado (trilla output plus materia prima despachada directo),
+        // not scoped to the pre-trilla stage like kg_recibidos above.
         $kgRecibidosTotal = $allRecords->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
-        $kgDespachadoTotal = (float) TrillaProducto::whereNotNull('remision_despacho')->sum('kg');
-        $existencia = max(0, $kgRecibidosTotal - $kgDespachadoTotal);
+        $kgDespachadoProductos = (float) TrillaProducto::whereNotNull('remision_despacho')->sum('kg');
+        $kgDespachadoDirecto = $allRecords
+            ->filter(fn (InventoryRecord $r) => $r->isDespachadoDirecto())
+            ->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
+        $existencia = max(0, $kgRecibidosTotal - $kgDespachadoProductos - $kgDespachadoDirecto);
 
         // Trilla output that's already been produced but hasn't left via
-        // despacho yet — the finished-product counterpart of kg_en_bodega /
-        // kg_en_trilla, one stage further down the line.
-        $kgEnDespacho = (float) TrillaProducto::whereNull('remision_despacho')->sum('kg');
+        // despacho yet, plus materia prima sent directo a despacho that
+        // hasn't shipped out either — the finished/pending-dispatch
+        // counterpart of kg_en_bodega / kg_en_trilla, one stage further down.
+        $kgEnDespacho = (float) TrillaProducto::whereNull('remision_despacho')->sum('kg')
+            + $allRecords
+                ->filter(fn (InventoryRecord $r) => $r->enviado_a_despacho && ! $r->isDespachadoDirecto())
+                ->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
 
         // Factor ponderado por kg disponibles (pendientes de trilla): cada
         // remisión pesa según cuánto le queda por trillar, no por su kg

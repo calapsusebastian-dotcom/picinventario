@@ -123,6 +123,82 @@
             </div>
         </div>
 
+        <div class="section-label" style="margin-top:28px;">Materia prima pendiente de despacho (envío directo desde bodega)</div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Remisión</th><th>Calidad</th><th class="num">Kg recibidos</th><th>Cliente</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($pendingDirecto as $r)
+                            <tr class="data-row" wire:click="openEditRecord({{ $r->id }})">
+                                <td class="mono">{{ $r->remision ?: '—' }}</td>
+                                <td>{{ $r->calidad_enviada ?: '—' }}</td>
+                                <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
+                                <td>{{ $r->cliente ?: '—' }}</td>
+                                <td>
+                                    <button type="button" class="icon-btn" title="Despachar" wire:click.stop="openEditRecord({{ $r->id }})">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr class="empty-row"><td colspan="5">No hay materia prima pendiente de despacho directo.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-label" style="margin-top:28px;">Materia prima despachada directo</div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Remisión</th><th>Calidad</th><th class="num">Kg recibidos</th><th>Cliente</th><th>Remisión despacho</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($despachadosDirecto as $r)
+                            <tr class="data-row" wire:key="despachado-directo-{{ $r->id }}" wire:click="openEditRecord({{ $r->id }})">
+                                <td class="mono">{{ $r->remision ?: '—' }}</td>
+                                <td>{{ $r->calidad_enviada ?: '—' }}</td>
+                                <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
+                                <td>{{ $r->cliente ?: '—' }}</td>
+                                <td class="mono">{{ $r->remision_despacho }}</td>
+                                <td>
+                                    <button type="button" class="icon-btn" title="Editar despacho" wire:click.stop="openEditRecord({{ $r->id }})">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </button>
+                                    <button type="button" class="icon-btn danger" title="Revertir despacho" wire:click.stop="confirmRevertRecord({{ $r->id }})">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            @if ($confirmRevertRecordId === $r->id)
+                                <tr class="confirm-row">
+                                    <td colspan="6">
+                                        ¿Revertir el despacho de la remisión "{{ $r->remision }}"? Vuelve a quedar pendiente de despacho. Esta acción no se puede deshacer.
+                                        <button type="button" class="btn-del-confirm" wire:click.stop="revertRecord({{ $r->id }})">Revertir</button>
+                                        <button type="button" class="btn-del-cancel" wire:click.stop="cancelRevertRecord">Cancelar</button>
+                                    </td>
+                                </tr>
+                            @endif
+                        @empty
+                            <tr class="empty-row"><td colspan="6">Aún no se ha despachado materia prima directo.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     {{-- Slide-over form --}}
@@ -130,9 +206,16 @@
         <div class="drawer">
             <div class="drawer-header">
                 <h2 style="display:flex;align-items:center;gap:10px;">
-                    {{ $editingProducto && $editingProducto->isDespachado() ? 'Editar despacho' : 'Despachar producto' }}
-                    @if ($editingProducto && $editingProducto->isDespachado())
-                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachada</span>
+                    @if ($editingRecord)
+                        {{ $editingRecord->isDespachadoDirecto() ? 'Editar despacho' : 'Despachar materia prima' }}
+                        @if ($editingRecord->isDespachadoDirecto())
+                            <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachada</span>
+                        @endif
+                    @else
+                        {{ $editingProducto && $editingProducto->isDespachado() ? 'Editar despacho' : 'Despachar producto' }}
+                        @if ($editingProducto && $editingProducto->isDespachado())
+                            <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachada</span>
+                        @endif
                     @endif
                 </h2>
                 <button type="button" wire:click="closeDrawer">
@@ -140,7 +223,19 @@
                 </button>
             </div>
 
-            @if ($editingProducto)
+            @if ($editingRecord)
+                <div style="padding:16px 24px 0;">
+                    <div class="detail-grid">
+                        <div class="detail-block" style="grid-column:1 / -1;">
+                            <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-accent)"></span><span class="detail-title">Materia prima · Remisión {{ $editingRecord->remision ?: '—' }}</span></div>
+                            <div class="detail-item"><span>Calidad</span><span>{{ $editingRecord->calidad_enviada ?: '—' }}</span></div>
+                            <div class="detail-item"><span>Kg recibidos</span><span>{{ $editingRecord->kg_recibidos ? $editingRecord->kg_recibidos.' kg' : '—' }}</span></div>
+                            <div class="detail-item"><span>Cliente</span><span>{{ $editingRecord->cliente ?: '—' }}</span></div>
+                            <div class="detail-item"><span>Destino</span><span>{{ $editingRecord->destino ?: '—' }}</span></div>
+                        </div>
+                    </div>
+                </div>
+            @elseif ($editingProducto)
                 <div style="padding:16px 24px 0;">
                     <div class="detail-grid">
                         <div class="detail-block">
@@ -169,16 +264,18 @@
                         <input wire:model="remision_despacho" placeholder="D-0000">
                         @error('remision_despacho') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                     </div>
-                    <div class="field">
-                        <label>Destino</label>
-                        <select wire:model="destino">
-                            <option value="">Selecciona...</option>
-                            @foreach ($clientes as $c)
-                                <option value="{{ $c }}">{{ $c }}</option>
-                            @endforeach
-                        </select>
-                        @error('destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
-                    </div>
+                    @if (! $editingRecord)
+                        <div class="field">
+                            <label>Destino</label>
+                            <select wire:model="destino">
+                                <option value="">Selecciona...</option>
+                                @foreach ($clientes as $c)
+                                    <option value="{{ $c }}">{{ $c }}</option>
+                                @endforeach
+                            </select>
+                            @error('destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                        </div>
+                    @endif
                 </div>
             </form>
 
