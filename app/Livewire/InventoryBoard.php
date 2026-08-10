@@ -179,8 +179,16 @@ class InventoryBoard extends Component
 
         // Kg that have gone into a trilla lote no longer count here — a
         // remisión can be partially trillada, so this sums whatever kg each
-        // one has left to give, not an all-or-nothing per record.
-        $kgRec = $allRecords->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
+        // one has left to give, not an all-or-nothing per record. Split by
+        // enviado_a_trilla so it's clear how much is still sitting in
+        // Bodega versus already released to Trilla's pool.
+        $kgEnBodega = $allRecords
+            ->filter(fn (InventoryRecord $r) => ! $r->enviado_a_trilla)
+            ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
+        $kgEnTrilla = $allRecords
+            ->filter(fn (InventoryRecord $r) => $r->enviado_a_trilla)
+            ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
+        $kgRec = $kgEnBodega + $kgEnTrilla;
 
         // "Sin despachar": everything still physically in the warehouse,
         // whether it's raw kg recibidos that hasn't been trillado yet or
@@ -207,6 +215,8 @@ class InventoryBoard extends Component
             'registros' => $allRecords->count(),
             'kg_enviados' => $kgEnv,
             'kg_recibidos' => $kgRec,
+            'kg_en_bodega' => $kgEnBodega,
+            'kg_en_trilla' => $kgEnTrilla,
             'existencia' => $existencia,
             'factor_promedio' => $factorPonderado,
         ];

@@ -5,6 +5,7 @@
         'inbox' => '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>',
         'box' => '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12l8.73-5.04M12 22.08V12"/>',
         'gauge' => '<path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M12 2a10 10 0 00-8.66 15L12 12l8.66 5A10 10 0 0012 2z"/>',
+        'clock' => '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     ];
     $colors = [
         'accent' => ['bg' => 'var(--pic-accent-soft)', 'fg' => 'var(--pic-accent-deep)'],
@@ -15,7 +16,8 @@
     $cards = [
         ['label' => 'Registros', 'value' => $summary['registros'], 'unit' => '', 'icon' => 'clipboard', 'color' => 'accent'],
         ['label' => 'Kg enviados', 'value' => $fmt($summary['kg_enviados']), 'unit' => 'kg', 'icon' => 'send', 'color' => 'purple'],
-        ['label' => 'Kg recibidos (pendientes de trilla)', 'value' => $fmt($summary['kg_recibidos']), 'unit' => 'kg', 'icon' => 'inbox', 'color' => 'amber'],
+        ['label' => 'Kg en bodega', 'value' => $fmt($summary['kg_en_bodega']), 'unit' => 'kg', 'icon' => 'inbox', 'color' => 'amber'],
+        ['label' => 'Kg en trilla', 'value' => $fmt($summary['kg_en_trilla']), 'unit' => 'kg', 'icon' => 'clock', 'color' => 'purple'],
         ['label' => 'Existencia en bodega (sin despachar)', 'value' => $fmt($summary['existencia']), 'unit' => 'kg', 'icon' => 'box', 'color' => 'accent'],
         ['label' => 'Factor ponderado (recepción)', 'value' => number_format($summary['factor_promedio'], 1), 'unit' => '', 'icon' => 'gauge', 'color' => 'purple'],
     ];
