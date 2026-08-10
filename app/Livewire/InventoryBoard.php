@@ -200,6 +200,11 @@ class InventoryBoard extends Component
         $kgDespachadoTotal = (float) TrillaProducto::whereNotNull('remision_despacho')->sum('kg');
         $existencia = max(0, $kgRecibidosTotal - $kgDespachadoTotal);
 
+        // Trilla output that's already been produced but hasn't left via
+        // despacho yet — the finished-product counterpart of kg_en_bodega /
+        // kg_en_trilla, one stage further down the line.
+        $kgEnDespacho = (float) TrillaProducto::whereNull('remision_despacho')->sum('kg');
+
         // Factor ponderado por kg disponibles (pendientes de trilla): cada
         // remisión pesa según cuánto le queda por trillar, no por su kg
         // recibidos original — una vez trillada, ya no debe seguir pesando.
@@ -217,6 +222,7 @@ class InventoryBoard extends Component
             'kg_recibidos' => $kgRec,
             'kg_en_bodega' => $kgEnBodega,
             'kg_en_trilla' => $kgEnTrilla,
+            'kg_en_despacho' => $kgEnDespacho,
             'existencia' => $existencia,
             'factor_promedio' => $factorPonderado,
         ];

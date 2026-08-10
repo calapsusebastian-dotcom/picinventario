@@ -6,6 +6,7 @@
         'box' => '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12l8.73-5.04M12 22.08V12"/>',
         'gauge' => '<path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M12 2a10 10 0 00-8.66 15L12 12l8.66 5A10 10 0 0012 2z"/>',
         'clock' => '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+        'truck' => '<rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
     ];
     $colors = [
         'accent' => ['bg' => 'var(--pic-accent-soft)', 'fg' => 'var(--pic-accent-deep)'],
@@ -18,6 +19,7 @@
         ['label' => 'Kg enviados', 'value' => $fmt($summary['kg_enviados']), 'unit' => 'kg', 'icon' => 'send', 'color' => 'purple'],
         ['label' => 'Kg en bodega', 'value' => $fmt($summary['kg_en_bodega']), 'unit' => 'kg', 'icon' => 'inbox', 'color' => 'amber'],
         ['label' => 'Kg en trilla', 'value' => $fmt($summary['kg_en_trilla']), 'unit' => 'kg', 'icon' => 'clock', 'color' => 'purple'],
+        ['label' => 'Kg en despacho (por despachar)', 'value' => $fmt($summary['kg_en_despacho']), 'unit' => 'kg', 'icon' => 'truck', 'color' => 'accent'],
         ['label' => 'Existencia en bodega (sin despachar)', 'value' => $fmt($summary['existencia']), 'unit' => 'kg', 'icon' => 'box', 'color' => 'accent'],
         ['label' => 'Factor ponderado (recepción)', 'value' => number_format($summary['factor_promedio'], 1), 'unit' => '', 'icon' => 'gauge', 'color' => 'purple'],
     ];
