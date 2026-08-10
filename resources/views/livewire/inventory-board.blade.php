@@ -89,7 +89,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Kg env.</th><th>Kg rec.</th><th>Cliente</th><th>Imov</th><th>Estatus</th><th>Progreso</th><th></th>
+                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Kg env.</th><th>Kg rec.</th><th>Ubicación</th><th>Cliente</th><th>Imov</th><th>Estatus</th><th>Progreso</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -110,6 +110,20 @@
                                 <td>{{ $r->calidad_enviada ?: '—' }}</td>
                                 <td class="mono num">{{ $r->kg_enviados ?: '0' }}</td>
                                 <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
+                                <td>
+                                    @php $saldo = $r->kgDisponible(); @endphp
+                                    @if ($saldo === null || $saldo <= 0.001)
+                                        @if ($r->trillas->isNotEmpty())
+                                            <span class="badge" style="background:var(--pic-accent-soft);color:var(--pic-accent-deep)">Trillado</span>
+                                        @else
+                                            —
+                                        @endif
+                                    @elseif ($r->enviado_a_trilla)
+                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En trilla</span>
+                                    @else
+                                        <span class="badge" style="background:var(--pic-amber-soft);color:var(--pic-amber)">En bodega</span>
+                                    @endif
+                                </td>
                                 <td>{{ $r->cliente ?: '—' }}</td>
                                 <td class="mono num">{{ $r->imov ?: '—' }}</td>
                                 <td><span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ $r->estatus }}</span></td>
@@ -135,7 +149,7 @@
 
                             @if ($confirmDeleteId === $r->id)
                                 <tr class="confirm-row">
-                                    <td colspan="10">
+                                    <td colspan="11">
                                         ¿Eliminar el registro {{ $r->remision ?: 'sin remisión' }}? Esta acción no se puede deshacer.
                                         <button type="button" class="btn-del-confirm" wire:click.stop="delete({{ $r->id }})">Eliminar</button>
                                         <button type="button" class="btn-del-cancel" wire:click.stop="cancelDelete">Cancelar</button>
@@ -145,7 +159,7 @@
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="10">
+                                    <td colspan="11">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío · {{ $r->analisis_enviado_por ?: '—' }}</span></div>
@@ -199,7 +213,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="10">No hay registros que coincidan con los filtros.</td></tr>
+                            <tr class="empty-row"><td colspan="11">No hay registros que coincidan con los filtros.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
