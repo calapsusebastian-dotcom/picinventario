@@ -48,7 +48,7 @@ new class extends Component
 <div class="contents" x-data="{ open: false, collapsed: false }">
     {{-- Desktop sidebar --}}
     <aside
-        class="hidden sm:flex sm:flex-col sm:shrink-0 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 min-h-screen transition-[width] duration-150"
+        class="hidden sm:flex sm:flex-col sm:shrink-0 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 sticky top-0 h-screen overflow-hidden transition-[width] duration-150"
         x-data="{ collapsed: localStorage.getItem('pic_sidebar_collapsed') === '1' }"
         x-init="$watch('collapsed', value => localStorage.setItem('pic_sidebar_collapsed', value ? '1' : '0'))"
         x-bind:class="collapsed ? 'sm:w-[76px]' : 'sm:w-64'"
