@@ -20,7 +20,7 @@
         ['label' => 'Kg en bodega', 'value' => $fmt($summary['kg_en_bodega']), 'unit' => 'kg', 'icon' => 'inbox', 'color' => 'amber'],
         ['label' => 'Kg en trilla', 'value' => $fmt($summary['kg_en_trilla']), 'unit' => 'kg', 'icon' => 'clock', 'color' => 'purple'],
         ['label' => 'Kg en despacho (por despachar)', 'value' => $fmt($summary['kg_en_despacho']), 'unit' => 'kg', 'icon' => 'truck', 'color' => 'accent'],
-        ['label' => 'Existencia en bodega (sin despachar)', 'value' => $fmt($summary['existencia']), 'unit' => 'kg', 'icon' => 'box', 'color' => 'accent'],
+        ['label' => 'Existencia en bodegas', 'value' => $fmt($summary['existencia']), 'unit' => 'kg', 'icon' => 'box', 'color' => 'accent'],
         ['label' => 'Factor ponderado (recepción)', 'value' => number_format($summary['factor_promedio'], 1), 'unit' => '', 'icon' => 'gauge', 'color' => 'purple'],
     ];
     $statusColor = function (string $estatus) {
