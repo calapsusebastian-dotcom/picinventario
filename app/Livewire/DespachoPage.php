@@ -39,9 +39,7 @@ class DespachoPage extends Component
     }
 
     /**
-     * Materia prima sent straight from Bodega, skipping trilla — this only
-     * needs a remisión de despacho, the destino was already set earlier in
-     * the record's own workflow.
+     * Materia prima sent straight from Bodega, skipping trilla.
      */
     public function openEditRecord(int $id): void
     {
@@ -50,7 +48,7 @@ class DespachoPage extends Component
         $this->editingRecordId = $id;
         $this->editingProductoId = null;
         $this->remision_despacho = $record->remision_despacho ?? '';
-        $this->destino = '';
+        $this->destino = $record->destino ?? '';
         $this->showDrawer = true;
     }
 
@@ -64,6 +62,7 @@ class DespachoPage extends Component
         if ($this->editingRecordId) {
             $validated = $this->validate([
                 'remision_despacho' => ['required', 'string', 'max:255'],
+                'destino' => ['nullable', 'string', 'max:255'],
             ]);
 
             $record = InventoryRecord::findOrFail($this->editingRecordId);
