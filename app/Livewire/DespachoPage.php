@@ -57,6 +57,21 @@ class DespachoPage extends Component
         $this->showDrawer = false;
     }
 
+    /**
+     * Send materia prima that's still pending despacho back to Bodega's
+     * pool — clears enviado_a_despacho so it shows up as "Pendiente" there
+     * again, ready to be re-routed to trilla or despacho.
+     */
+    public function reversarABodega(int $id): void
+    {
+        InventoryRecord::whereKey($id)->update(['enviado_a_despacho' => false]);
+
+        if ($this->editingRecordId === $id) {
+            $this->showDrawer = false;
+            $this->editingRecordId = null;
+        }
+    }
+
     public function save(): void
     {
         if ($this->editingRecordId) {
