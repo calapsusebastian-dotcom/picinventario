@@ -10,6 +10,9 @@ class BodegaPage extends Component
 {
     public string $search = '';
 
+    /** @var string 'Todos'|'Pendiente'|'Enviada' — filters by the Despacho status badge. */
+    public string $filterDespacho = 'Todos';
+
     public ?int $expandedRow = null;
 
     /** @var array<int, int|string> Selected InventoryRecord ids to release to Trilla. */
@@ -64,6 +67,14 @@ class BodegaPage extends Component
             ->orderByDesc('id')
             ->get()
             ->filter(function (InventoryRecord $r) {
+                if ($this->filterDespacho === 'Pendiente' && $r->enviado_a_despacho) {
+                    return false;
+                }
+
+                if ($this->filterDespacho === 'Enviada' && ! $r->enviado_a_despacho) {
+                    return false;
+                }
+
                 if ($this->search === '') {
                     return true;
                 }

@@ -62,6 +62,11 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Buscar por remisión, calidad o cliente...">
             </div>
+            <select wire:model.live="filterDespacho">
+                <option value="Todos">Despacho: todos</option>
+                <option value="Pendiente">Despacho: pendiente</option>
+                <option value="Enviada">Despacho: enviada</option>
+            </select>
         </div>
 
         <div class="section-label">Movimientos de bodega ({{ $movimientos->count() }})</div>
