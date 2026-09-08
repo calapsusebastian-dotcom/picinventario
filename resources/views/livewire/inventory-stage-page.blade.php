@@ -118,6 +118,7 @@
                             <div class="detail-item"><span>N° tulas</span><span>{{ $form->tulas ?: '—' }}</span></div>
                             <div class="detail-item"><span>N° costal</span><span>{{ $form->costal ?: '—' }}</span></div>
                             <div class="detail-item"><span>Ubicación</span><span>{{ $form->ubicacion ?: '—' }}</span></div>
+                            <div class="detail-item"><span>Observación</span><span>{{ $form->observacion ?: '—' }}</span></div>
                         </div>
 
                         @if (in_array($stage, ['recepcion', 'destino', 'imov']))
@@ -190,6 +191,11 @@
                                 @endforeach
                             </select>
                             @error('form.ubicacion') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                        </div>
+                        <div class="field" style="grid-column:1 / -1;">
+                            <label>Observación</label>
+                            <textarea wire:model="form.observacion" rows="3" placeholder="Notas adicionales sobre esta remisión..." style="resize:vertical;"></textarea>
+                            @error('form.observacion') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
                     </div>
                 @endif

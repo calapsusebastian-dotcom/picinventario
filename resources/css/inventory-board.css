@@ -35,8 +35,9 @@
 .pic-board .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
 .pic-board .search-box{position:relative;flex:1 1 240px;}
 .pic-board .search-box svg{position:absolute;left:12px;top:11px;color:var(--pic-ink-faint);}
-.pic-board input,.pic-board select{border:1px solid var(--pic-line-strong);border-radius:10px;padding:9px 12px;font-size:13.5px;font-family:var(--pic-font);color:var(--pic-ink);background:#fff;outline:none;}
-.pic-board input:focus,.pic-board select:focus{border-color:var(--pic-accent);box-shadow:0 0 0 3px var(--pic-accent-soft);}
+.pic-board input,.pic-board select,.pic-board textarea{border:1px solid var(--pic-line-strong);border-radius:10px;padding:9px 12px;font-size:13.5px;font-family:var(--pic-font);color:var(--pic-ink);background:#fff;outline:none;}
+.pic-board input:focus,.pic-board select:focus,.pic-board textarea:focus{border-color:var(--pic-accent);box-shadow:0 0 0 3px var(--pic-accent-soft);}
+.pic-board textarea{font-family:inherit;}
 .pic-board .search-box input{width:100%;padding-left:34px;}
 .pic-board .f-anio{width:130px;} .pic-board .f-estatus{width:170px;}
 

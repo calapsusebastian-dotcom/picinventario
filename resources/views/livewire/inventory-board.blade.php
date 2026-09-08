@@ -183,6 +183,7 @@
                                                 <div class="detail-item"><span>N° tulas</span><span>{{ $r->tulas ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>N° costal</span><span>{{ $r->costal ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Ubicación</span><span>{{ $r->ubicacion ?: '—' }}</span></div>
+                                                <div class="detail-item"><span>Observación</span><span>{{ $r->observacion ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Almendra sana</span><span>{{ $r->as_env ? $r->as_env.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Pasilla</span><span>{{ $r->pas_env ? $r->pas_env.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Primer grupo</span><span>{{ $r->pg_env ? $r->pg_env.'%' : '—' }}</span></div>
@@ -290,6 +291,11 @@
                             @endforeach
                         </select>
                         @error('form.ubicacion') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                    </div>
+                    <div class="field" style="grid-column:1 / -1;">
+                        <label>Observación</label>
+                        <textarea wire:model="form.observacion" rows="3" placeholder="Notas adicionales sobre esta remisión..." style="resize:vertical;"></textarea>
+                        @error('form.observacion') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                     </div>
                 </div>
 
