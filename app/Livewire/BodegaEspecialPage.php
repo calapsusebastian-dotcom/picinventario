@@ -6,16 +6,13 @@ use App\Models\InventoryRecord;
 use App\Models\Trilla;
 use Livewire\Component;
 
-class BodegaPage extends Component
+class BodegaEspecialPage extends Component
 {
     public string $search = '';
 
-    /** @var string 'Todos'|'Pendiente'|'Enviada' — filters by the Despacho status badge. */
-    public string $filterDespacho = 'Todos';
-
     public ?int $expandedRow = null;
 
-    /** @var array<int, int|string> Selected InventoryRecord ids to release to Trilla. */
+    /** @var array<int, int|string> Selected InventoryRecord ids to release to Trilla/Despacho. */
     public array $selected = [];
 
     public function mount(): void
@@ -29,9 +26,8 @@ class BodegaPage extends Component
     }
 
     /**
-     * Release the selected remisiones into Trilla's pool. Trilla itself
-     * still decides how much of each to actually use and what comes out —
-     * this just makes them visible/selectable over there.
+     * Release the selected remisiones into Trilla's pool, same as from the
+     * regular Bodega.
      */
     public function enviarATrilla(): void
     {
@@ -45,8 +41,8 @@ class BodegaPage extends Component
     }
 
     /**
-     * Release the selected remisiones straight to Despacho, skipping trilla
-     * entirely — for materia prima that goes out as-is.
+     * Release the selected remisiones straight to Despacho, skipping
+     * trilla, same as from the regular Bodega.
      */
     public function enviarADespacho(): void
     {
@@ -60,37 +56,28 @@ class BodegaPage extends Component
     }
 
     /**
-     * Release the selected remisiones into Bodega Especiales — a separate
-     * holding area. From there they get routed onward to Trilla or
-     * Despacho just like from this Bodega.
+     * Send a remisión back to the regular Bodega's pool — clears
+     * enviado_a_bodega_especial so it shows up there as "Pendiente" again.
      */
-    public function enviarABodegaEspecial(): void
+    public function reversarABodega(int $id): void
     {
-        if (empty($this->selected)) {
-            return;
+        InventoryRecord::whereKey($id)->update(['enviado_a_bodega_especial' => false]);
+
+        $this->selected = array_values(array_diff($this->selected, [$id]));
+
+        if ($this->expandedRow === $id) {
+            $this->expandedRow = null;
         }
-
-        InventoryRecord::whereIn('id', $this->selected)->update(['enviado_a_bodega_especial' => true]);
-
-        $this->selected = [];
     }
 
     public function render()
     {
         $records = InventoryRecord::with('trillas')
-            ->whereNotNull('kg_recibidos')
+            ->where('enviado_a_bodega_especial', true)
             ->orderByDesc('fecha')
             ->orderByDesc('id')
             ->get()
             ->filter(function (InventoryRecord $r) {
-                if ($this->filterDespacho === 'Pendiente' && $r->enviado_a_despacho) {
-                    return false;
-                }
-
-                if ($this->filterDespacho === 'Enviada' && ! $r->enviado_a_despacho) {
-                    return false;
-                }
-
                 if ($this->search === '') {
                     return true;
                 }
@@ -119,7 +106,7 @@ class BodegaPage extends Component
             'saldo' => $records->sum('saldo'),
         ];
 
-        return view('livewire.bodega-page', [
+        return view('livewire.bodega-especial-page', [
             'movimientos' => $records,
             'totales' => $totales,
         ]);

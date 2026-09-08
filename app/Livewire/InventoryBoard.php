@@ -200,15 +200,20 @@ class InventoryBoard extends Component
         // partially trillada, so this sums whatever kg each one has left to
         // give, not an all-or-nothing per record. Split by enviado_a_trilla
         // so it's clear how much is still sitting in Bodega versus already
-        // released to Trilla's pool.
+        // released to Trilla's pool. Bodega Especial is a separate holding
+        // area in between — its own bucket, not "en bodega" nor "en trilla".
         $enBodegaOTrilla = $allRecords->filter(fn (InventoryRecord $r) => ! $r->enviado_a_despacho);
-        $kgEnBodega = $enBodegaOTrilla
-            ->filter(fn (InventoryRecord $r) => ! $r->enviado_a_trilla)
-            ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
         $kgEnTrilla = $enBodegaOTrilla
             ->filter(fn (InventoryRecord $r) => $r->enviado_a_trilla)
             ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
-        $kgRec = $kgEnBodega + $kgEnTrilla;
+        $sinTrilla = $enBodegaOTrilla->filter(fn (InventoryRecord $r) => ! $r->enviado_a_trilla);
+        $kgEnBodegaEspecial = $sinTrilla
+            ->filter(fn (InventoryRecord $r) => $r->enviado_a_bodega_especial)
+            ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
+        $kgEnBodega = $sinTrilla
+            ->filter(fn (InventoryRecord $r) => ! $r->enviado_a_bodega_especial)
+            ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
+        $kgRec = $kgEnBodega + $kgEnBodegaEspecial + $kgEnTrilla;
 
         // "Sin despachar": everything still physically in the warehouse,
         // whether it's raw kg recibidos that hasn't been trillado yet or
@@ -249,6 +254,7 @@ class InventoryBoard extends Component
             'kg_enviados' => $kgEnv,
             'kg_recibidos' => $kgRec,
             'kg_en_bodega' => $kgEnBodega,
+            'kg_en_bodega_especial' => $kgEnBodegaEspecial,
             'kg_en_trilla' => $kgEnTrilla,
             'kg_en_despacho' => $kgEnDespacho,
             'existencia' => $existencia,

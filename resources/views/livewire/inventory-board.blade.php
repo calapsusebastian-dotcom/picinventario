@@ -7,6 +7,7 @@
         'gauge' => '<path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M12 2a10 10 0 00-8.66 15L12 12l8.66 5A10 10 0 0012 2z"/>',
         'clock' => '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
         'truck' => '<rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+        'star' => '<path d="M12 2.5l3 6.4 7 1-5 5 1.2 7.1L12 18.6l-6.2 3.4L7 14.9l-5-5 7-1z"/>',
     ];
     $colors = [
         'accent' => ['bg' => 'var(--pic-accent-soft)', 'fg' => 'var(--pic-accent-deep)'],
@@ -18,6 +19,7 @@
         ['label' => 'Registros', 'value' => $summary['registros'], 'unit' => '', 'icon' => 'clipboard', 'color' => 'accent'],
         ['label' => 'Kg enviados', 'value' => $fmt($summary['kg_enviados']), 'unit' => 'kg', 'icon' => 'send', 'color' => 'purple'],
         ['label' => 'Kg en bodega', 'value' => $fmt($summary['kg_en_bodega']), 'unit' => 'kg', 'icon' => 'inbox', 'color' => 'amber'],
+        ['label' => 'Kg en bodega especial', 'value' => $fmt($summary['kg_en_bodega_especial']), 'unit' => 'kg', 'icon' => 'star', 'color' => 'purple'],
         ['label' => 'Kg en trilla', 'value' => $fmt($summary['kg_en_trilla']), 'unit' => 'kg', 'icon' => 'clock', 'color' => 'purple'],
         ['label' => 'Kg en despacho (por despachar)', 'value' => $fmt($summary['kg_en_despacho']), 'unit' => 'kg', 'icon' => 'truck', 'color' => 'accent'],
         ['label' => 'Existencia en bodegas', 'value' => $fmt($summary['existencia']), 'unit' => 'kg', 'icon' => 'box', 'color' => 'accent'],
@@ -135,6 +137,8 @@
                                         @endif
                                     @elseif ($r->enviado_a_trilla)
                                         <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En trilla</span>
+                                    @elseif ($r->enviado_a_bodega_especial)
+                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En bodega especial</span>
                                     @else
                                         <span class="badge" style="background:var(--pic-amber-soft);color:var(--pic-amber)">En bodega</span>
                                     @endif

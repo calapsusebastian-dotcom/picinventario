@@ -97,6 +97,10 @@ new class extends Component
                     <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
                     {{ __('Bodega') }}
                 </x-sidebar-link>
+                <x-sidebar-link :href="route('bodega-especial')" :active="request()->routeIs('bodega-especial')" wire:navigate>
+                    <x-slot name="icon"><x-nav-icon name="bodega-especial" /></x-slot>
+                    {{ __('Bodega Especiales') }}
+                </x-sidebar-link>
             @endif
             @if ($this->canAccessModule('trilla'))
                 <x-sidebar-link :href="route('trilla')" :active="request()->routeIs('trilla')" wire:navigate>
@@ -205,6 +209,10 @@ new class extends Component
                     <x-sidebar-link :href="route('bodega')" :active="request()->routeIs('bodega')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
                         {{ __('Bodega') }}
+                    </x-sidebar-link>
+                    <x-sidebar-link :href="route('bodega-especial')" :active="request()->routeIs('bodega-especial')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="bodega-especial" /></x-slot>
+                        {{ __('Bodega Especiales') }}
                     </x-sidebar-link>
                 @endif
                 @if ($this->canAccessModule('trilla'))

@@ -62,4 +62,8 @@ Route::view('bodega', 'bodega')
     ->middleware(['auth', 'verified'])
     ->name('bodega');
 
+Route::view('bodega-especial', 'bodega-especial')
+    ->middleware(['auth', 'verified'])
+    ->name('bodega-especial');
+
 require __DIR__.'/auth.php';

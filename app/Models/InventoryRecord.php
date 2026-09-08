@@ -16,6 +16,7 @@ class InventoryRecord extends Model
         'destino', 'cliente', 'negocio', 'estatus', 'existencia',
         'imov', 'enviado_a_trilla',
         'enviado_a_despacho', 'remision_despacho', 'fecha_despacho',
+        'enviado_a_bodega_especial',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class InventoryRecord extends Model
         'enviado_a_trilla' => 'boolean',
         'enviado_a_despacho' => 'boolean',
         'fecha_despacho' => 'date',
+        'enviado_a_bodega_especial' => 'boolean',
         'kg_enviados' => 'decimal:2',
         'as_env' => 'decimal:2',
         'pas_env' => 'decimal:2',
