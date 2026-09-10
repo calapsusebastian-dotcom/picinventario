@@ -186,10 +186,27 @@ class InventoryBoard extends Component
             ->map(fn (string $stage) => ['label' => InventoryStages::label($stage), 'role' => InventoryStages::roleLabel($stage)])
             ->all();
 
+        // Totales de lo que se está viendo ahora mismo (respeta los filtros),
+        // con el factor de recepción ponderado por kg recibidos.
+        $kgRecFiltrado = $filtered->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
+        $conFactor = $filtered->filter(
+            fn (InventoryRecord $r) => (float) $r->factor_rec > 0 && (float) $r->kg_recibidos > 0
+        );
+        $kgParaFactor = $conFactor->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
+        $filaTotales = [
+            'count' => $filtered->count(),
+            'kg_enviados' => $filtered->sum(fn (InventoryRecord $r) => (float) $r->kg_enviados),
+            'kg_recibidos' => $kgRecFiltrado,
+            'factor_rec_ponderado' => $kgParaFactor > 0
+                ? $conFactor->sum(fn (InventoryRecord $r) => (float) $r->factor_rec * (float) $r->kg_recibidos) / $kgParaFactor
+                : 0,
+        ];
+
         return view('livewire.inventory-board', [
             'records' => $filtered,
             'years' => $years,
             'clientesFiltro' => $clientesFiltro,
+            'filaTotales' => $filaTotales,
             'summary' => $this->buildSummary($allRecords),
             'sections' => $sections,
             'productos' => Producto::orderBy('nombre')->pluck('nombre'),

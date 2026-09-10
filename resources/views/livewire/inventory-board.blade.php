@@ -244,6 +244,17 @@
                             <tr class="empty-row"><td colspan="12">No hay registros que coincidan con los filtros.</td></tr>
                         @endforelse
                     </tbody>
+                    @if ($filaTotales['count'] > 0)
+                        <tfoot>
+                            <tr class="totales-row">
+                                <td colspan="3">Totales ({{ $filaTotales['count'] }} registro{{ $filaTotales['count'] === 1 ? '' : 's' }})</td>
+                                <td class="mono num">{{ number_format($filaTotales['kg_enviados'], 2, ',', '.') }}</td>
+                                <td class="mono num">{{ number_format($filaTotales['kg_recibidos'], 2, ',', '.') }}</td>
+                                <td class="mono num">{{ number_format($filaTotales['factor_rec_ponderado'], 2, ',', '.') }}</td>
+                                <td colspan="6"></td>
+                            </tr>
+                        </tfoot>
+                    @endif
                 </table>
             </div>
         </div>
