@@ -160,6 +160,8 @@
                                 <div class="detail-item"><span>Negocio</span><span>{{ $form->negocio ?: '—' }}</span></div>
                                 <div class="detail-item"><span>Estatus</span><span>{{ $form->estatus ?: '—' }}</span></div>
                                 <div class="detail-item"><span>Existencia</span><span>{{ $form->existencia ? $form->existencia.' kg' : '—' }}</span></div>
+                                <div class="detail-item"><span>Taza</span><span>{{ $form->taza_destino ?: '—' }}</span></div>
+                                <div class="detail-item"><span>Puntaje de taza</span><span>{{ $form->puntaje_taza_destino ?: '—' }}</span></div>
                             </div>
                         @endif
                     </div>
@@ -266,6 +268,8 @@
                             @error('form.estatus') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
                         <div class="field"><label>Existencia <small>(kg)</small></label><input type="number" wire:model="form.existencia">@error('form.existencia') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Taza</label><input wire:model="form.taza_destino" placeholder="Notas de catación">@error('form.taza_destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                        <div class="field"><label>Puntaje de taza</label><input type="number" step="0.01" wire:model="form.puntaje_taza_destino">@error('form.puntaje_taza_destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     </div>
                 @endif
 

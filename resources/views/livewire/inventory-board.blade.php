@@ -221,6 +221,8 @@
                                                 <div class="detail-item"><span>Destino</span><span>{{ $r->destino ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Negocio</span><span>{{ $r->negocio ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Existencia</span><span>{{ $r->existencia ? $r->existencia.' kg' : '—' }}</span></div>
+                                                <div class="detail-item"><span>Taza</span><span>{{ $r->taza_destino ?: '—' }}</span></div>
+                                                <div class="detail-item"><span>Puntaje de taza</span><span>{{ $r->puntaje_taza_destino ?: '—' }}</span></div>
                                             </div>
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">Imov</span></div>
@@ -382,6 +384,8 @@
                         @error('form.estatus') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                     </div>
                     <div class="field"><label>Existencia <small>(kg)</small></label><input type="number" wire:model="form.existencia">@error('form.existencia') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                    <div class="field"><label>Taza</label><input wire:model="form.taza_destino" placeholder="Notas de catación">@error('form.taza_destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
+                    <div class="field"><label>Puntaje de taza</label><input type="number" step="0.01" wire:model="form.puntaje_taza_destino">@error('form.puntaje_taza_destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                 </div>
 
                 <div class="tab-panel{{ $activeSection === 4 ? ' active' : '' }}">

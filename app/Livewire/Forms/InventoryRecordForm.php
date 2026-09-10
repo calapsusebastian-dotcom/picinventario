@@ -67,6 +67,8 @@ class InventoryRecordForm extends Form
     public ?string $negocio = '';
     public string $estatus = 'En bodega';
     public ?string $existencia = '';
+    public ?string $taza_destino = '';
+    public ?string $puntaje_taza_destino = '';
 
     // Imov
     public ?string $imov = '';
@@ -111,6 +113,8 @@ class InventoryRecordForm extends Form
             'negocio' => ['nullable', 'string', 'max:255'],
             'estatus' => ['required', 'string', 'in:En bodega,Despachado,En tránsito,Reservado'],
             'existencia' => ['nullable', 'numeric'],
+            'taza_destino' => ['nullable', 'string', 'max:255'],
+            'puntaje_taza_destino' => ['nullable', 'numeric', 'max:100'],
 
             'imov' => ['nullable', 'integer'],
         ];
@@ -163,6 +167,7 @@ class InventoryRecordForm extends Form
             'humedad_rec' => 'humedad', 'factor_rec' => 'factor', 'taza_rec' => 'taza', 'puntaje_taza_rec' => 'puntaje de taza',
 
             'destino' => 'destino', 'cliente' => 'cliente', 'negocio' => 'negocio', 'estatus' => 'estatus', 'existencia' => 'existencia',
+            'taza_destino' => 'taza', 'puntaje_taza_destino' => 'puntaje de taza',
 
             'imov' => 'imov',
         ];
@@ -207,6 +212,8 @@ class InventoryRecordForm extends Form
         $this->negocio = $record->negocio;
         $this->estatus = $record->estatus;
         $this->existencia = (string) $record->existencia;
+        $this->taza_destino = $record->taza_destino;
+        $this->puntaje_taza_destino = (string) $record->puntaje_taza_destino;
 
         $this->imov = (string) $record->imov;
     }

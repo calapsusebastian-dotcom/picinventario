@@ -13,7 +13,7 @@ class InventoryRecord extends Model
         'as_env', 'pas_env', 'pg_env', 'broca_env', 'humedad_env', 'factor_env', 'taza_env', 'puntaje_taza_env',
         'analisis_recibido_por', 'kg_recibidos',
         'as_rec', 'pas_rec', 'pg_rec', 'broca_rec', 'humedad_rec', 'factor_rec', 'taza_rec', 'puntaje_taza_rec',
-        'destino', 'cliente', 'negocio', 'estatus', 'existencia',
+        'destino', 'cliente', 'negocio', 'estatus', 'existencia', 'taza_destino', 'puntaje_taza_destino',
         'imov', 'enviado_a_trilla',
         'enviado_a_despacho', 'remision_despacho', 'fecha_despacho',
         'enviado_a_bodega_especial',
@@ -46,6 +46,7 @@ class InventoryRecord extends Model
         'factor_rec' => 'decimal:2',
         'puntaje_taza_rec' => 'decimal:2',
         'existencia' => 'decimal:2',
+        'puntaje_taza_destino' => 'decimal:2',
     ];
 
     /**
