@@ -132,8 +132,6 @@
                                 <div class="detail-item"><span>Broca</span><span>{{ $form->broca_env ? $form->broca_env.'%' : '—' }}</span></div>
                                 <div class="detail-item"><span>Humedad</span><span>{{ $form->humedad_env ? $form->humedad_env.'%' : '—' }}</span></div>
                                 <div class="detail-item"><span>Factor</span><span>{{ $form->factor_env ?: '—' }}</span></div>
-                                <div class="detail-item"><span>Taza</span><span>{{ $form->taza_env ?: '—' }}</span></div>
-                                <div class="detail-item"><span>Puntaje taza</span><span>{{ $form->puntaje_taza_env ?: '—' }}</span></div>
                             </div>
                         @endif
 
@@ -147,8 +145,6 @@
                                 <div class="detail-item"><span>Broca</span><span>{{ $form->broca_rec ? $form->broca_rec.'%' : '—' }}</span></div>
                                 <div class="detail-item"><span>Humedad</span><span>{{ $form->humedad_rec ? $form->humedad_rec.'%' : '—' }}</span></div>
                                 <div class="detail-item"><span>Factor</span><span>{{ $form->factor_rec ?: '—' }}</span></div>
-                                <div class="detail-item"><span>Taza</span><span>{{ $form->taza_rec ?: '—' }}</span></div>
-                                <div class="detail-item"><span>Puntaje taza</span><span>{{ $form->puntaje_taza_rec ?: '—' }}</span></div>
                             </div>
                         @endif
 
@@ -226,8 +222,6 @@
                         <div class="field"><label>Broca <small>(%)</small></label><input type="number" wire:model="form.broca_env">@error('form.broca_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Humedad <small>(%)</small></label><input type="number" wire:model="form.humedad_env">@error('form.humedad_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Factor</label><input type="number" wire:model="form.factor_env">@error('form.factor_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
-                        <div class="field"><label>Taza</label><input wire:model="form.taza_env" placeholder="Notas de catación">@error('form.taza_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
-                        <div class="field"><label>Puntaje de taza</label><input type="number" wire:model="form.puntaje_taza_env">@error('form.puntaje_taza_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     </div>
                 @endif
 
@@ -244,8 +238,6 @@
                         <div class="field"><label>Broca <small>(%)</small></label><input type="number" wire:model="form.broca_rec">@error('form.broca_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Humedad <small>(%)</small></label><input type="number" wire:model="form.humedad_rec">@error('form.humedad_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Factor</label><input type="number" wire:model="form.factor_rec">@error('form.factor_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
-                        <div class="field"><label>Taza</label><input wire:model="form.taza_rec" placeholder="Notas de catación">@error('form.taza_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
-                        <div class="field"><label>Puntaje de taza</label><input type="number" wire:model="form.puntaje_taza_rec">@error('form.puntaje_taza_rec') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                     </div>
                 @endif
 

@@ -16,11 +16,11 @@ class InventoryRecordForm extends Form
         'general' => ['anio', 'mes', 'fecha', 'remision', 'tulas', 'costal'],
         'envio' => [
             'calidad_enviada', 'kg_enviados', 'analisis_enviado_por',
-            'as_env', 'pas_env', 'pg_env', 'broca_env', 'humedad_env', 'factor_env', 'taza_env', 'puntaje_taza_env',
+            'as_env', 'pas_env', 'pg_env', 'broca_env', 'humedad_env', 'factor_env',
         ],
         'recepcion' => [
             'analisis_recibido_por', 'kg_recibidos',
-            'as_rec', 'pas_rec', 'pg_rec', 'broca_rec', 'humedad_rec', 'factor_rec', 'taza_rec', 'puntaje_taza_rec',
+            'as_rec', 'pas_rec', 'pg_rec', 'broca_rec', 'humedad_rec', 'factor_rec',
         ],
         'destino' => ['destino', 'cliente', 'negocio', 'estatus', 'existencia'],
         'imov' => ['imov'],
@@ -46,8 +46,6 @@ class InventoryRecordForm extends Form
     public ?string $broca_env = '';
     public ?string $humedad_env = '';
     public ?string $factor_env = '';
-    public ?string $taza_env = '';
-    public ?string $puntaje_taza_env = '';
 
     // Recepcion
     public ?string $analisis_recibido_por = 'Bodega';
@@ -58,8 +56,6 @@ class InventoryRecordForm extends Form
     public ?string $broca_rec = '';
     public ?string $humedad_rec = '';
     public ?string $factor_rec = '';
-    public ?string $taza_rec = '';
-    public ?string $puntaje_taza_rec = '';
 
     // Destino
     public ?string $destino = '';
@@ -94,8 +90,6 @@ class InventoryRecordForm extends Form
             'broca_env' => ['nullable', 'numeric', 'max:300'],
             'humedad_env' => ['nullable', 'numeric', 'max:100'],
             'factor_env' => ['nullable', 'numeric', 'max:9999.99'],
-            'taza_env' => ['nullable', 'string', 'max:255'],
-            'puntaje_taza_env' => ['nullable', 'numeric', 'max:100'],
 
             'analisis_recibido_por' => ['nullable', 'string', 'max:255'],
             'kg_recibidos' => ['nullable', 'numeric'],
@@ -105,8 +99,6 @@ class InventoryRecordForm extends Form
             'broca_rec' => ['nullable', 'numeric', 'max:300'],
             'humedad_rec' => ['nullable', 'numeric', 'max:100'],
             'factor_rec' => ['nullable', 'numeric', 'max:9999.99'],
-            'taza_rec' => ['nullable', 'string', 'max:255'],
-            'puntaje_taza_rec' => ['nullable', 'numeric', 'max:100'],
 
             'destino' => ['nullable', 'string', 'max:255'],
             'cliente' => ['nullable', 'string', 'max:255'],
@@ -160,11 +152,11 @@ class InventoryRecordForm extends Form
 
             'calidad_enviada' => 'calidad enviada', 'kg_enviados' => 'kg enviados', 'analisis_enviado_por' => 'análisis enviado por',
             'as_env' => 'almendra sana', 'pas_env' => 'pasilla', 'pg_env' => 'primer grupo', 'broca_env' => 'broca',
-            'humedad_env' => 'humedad', 'factor_env' => 'factor', 'taza_env' => 'taza', 'puntaje_taza_env' => 'puntaje de taza',
+            'humedad_env' => 'humedad', 'factor_env' => 'factor',
 
             'analisis_recibido_por' => 'análisis recibido por', 'kg_recibidos' => 'kg recibidos',
             'as_rec' => 'almendra sana', 'pas_rec' => 'pasilla', 'pg_rec' => 'primer grupo', 'broca_rec' => 'broca',
-            'humedad_rec' => 'humedad', 'factor_rec' => 'factor', 'taza_rec' => 'taza', 'puntaje_taza_rec' => 'puntaje de taza',
+            'humedad_rec' => 'humedad', 'factor_rec' => 'factor',
 
             'destino' => 'destino', 'cliente' => 'cliente', 'negocio' => 'negocio', 'estatus' => 'estatus', 'existencia' => 'existencia',
             'taza_destino' => 'taza', 'puntaje_taza_destino' => 'puntaje de taza',
@@ -193,8 +185,6 @@ class InventoryRecordForm extends Form
         $this->broca_env = (string) $record->broca_env;
         $this->humedad_env = (string) $record->humedad_env;
         $this->factor_env = (string) $record->factor_env;
-        $this->taza_env = $record->taza_env;
-        $this->puntaje_taza_env = (string) $record->puntaje_taza_env;
 
         $this->analisis_recibido_por = $record->analisis_recibido_por;
         $this->kg_recibidos = (string) $record->kg_recibidos;
@@ -204,8 +194,6 @@ class InventoryRecordForm extends Form
         $this->broca_rec = (string) $record->broca_rec;
         $this->humedad_rec = (string) $record->humedad_rec;
         $this->factor_rec = (string) $record->factor_rec;
-        $this->taza_rec = $record->taza_rec;
-        $this->puntaje_taza_rec = (string) $record->puntaje_taza_rec;
 
         $this->destino = $record->destino;
         $this->cliente = $record->cliente;

@@ -122,8 +122,6 @@
                                                 <div class="detail-item"><span>Broca</span><span>{{ $r->broca_env ? $r->broca_env.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Humedad</span><span>{{ $r->humedad_env ? $r->humedad_env.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Factor</span><span>{{ $r->factor_env ?: '—' }}</span></div>
-                                                <div class="detail-item"><span>Taza</span><span>{{ $r->taza_env ?: '—' }}</span></div>
-                                                <div class="detail-item"><span>Puntaje taza</span><span>{{ $r->puntaje_taza_env ?: '—' }}</span></div>
                                             </div>
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-amber)"></span><span class="detail-title">Recepción · {{ $r->analisis_recibido_por ?: '—' }}</span></div>
@@ -134,8 +132,6 @@
                                                 <div class="detail-item"><span>Broca</span><span>{{ $r->broca_rec ? $r->broca_rec.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Humedad</span><span>{{ $r->humedad_rec ? $r->humedad_rec.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Factor</span><span>{{ $r->factor_rec ?: '—' }}</span></div>
-                                                <div class="detail-item"><span>Taza</span><span>{{ $r->taza_rec ?: '—' }}</span></div>
-                                                <div class="detail-item"><span>Puntaje taza</span><span>{{ $r->puntaje_taza_rec ?: '—' }}</span></div>
                                             </div>
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-accent)"></span><span class="detail-title">Destino</span></div>
