@@ -168,7 +168,13 @@ class ContraEntregaPage extends Component
             ->through(fn (InventoryRecord $r) => $this->comparacionDe($r));
 
         // KPIs arriba: sobre todo el conjunto filtrado, no solo la página.
-        $agg = $this->filteredQuery()->selectRaw('COALESCE(SUM(kg_enviados),0) e, COALESCE(SUM(kg_recibidos),0) r')->first();
+        // reorder() limpia el ORDER BY — un SUM() sin GROUP BY con ORDER BY
+        // sobre columna no agregada revienta bajo ONLY_FULL_GROUP_BY.
+        $agg = $this->filteredQuery()
+            ->toBase()
+            ->reorder()
+            ->selectRaw('COALESCE(SUM(kg_enviados), 0) as e, COALESCE(SUM(kg_recibidos), 0) as r')
+            ->first();
         $kgEnviadosTotal = (float) $agg->e;
         $kgRecibidosTotal = (float) $agg->r;
         $diffKgTotal = $kgRecibidosTotal - $kgEnviadosTotal;
