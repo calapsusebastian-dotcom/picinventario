@@ -76,7 +76,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Trilla</th><th>Despacho</th><th>Especiales</th>
+                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Ubicación</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -100,31 +100,25 @@
                                 <td class="mono num" style="font-weight:700;">{{ number_format($mov['saldo'], 2, ',', '.') }}</td>
                                 <td><span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ $r->estatus }}</span></td>
                                 <td>
-                                    @if ($r->enviado_a_trilla)
-                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Enviada</span>
+                                    @if ($r->isDespachadoDirecto())
+                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachado</span>
+                                    @elseif ($r->enviado_a_despacho)
+                                        <span class="badge" style="background:#E1EFFB;color:#1D5FA8;">En despacho</span>
+                                    @elseif ($mov['saldo'] <= 0.001 && $r->trillas->isNotEmpty())
+                                        <span class="badge" style="background:var(--pic-accent-soft);color:var(--pic-accent-deep)">Trillado</span>
+                                    @elseif ($r->enviado_a_trilla)
+                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En trilla</span>
+                                    @elseif ($r->enviado_a_bodega_especial)
+                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En bodega especial</span>
                                     @else
-                                        <span class="badge" style="background:var(--pic-line);color:var(--pic-ink-soft);">Pendiente</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($r->enviado_a_despacho)
-                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Enviada</span>
-                                    @else
-                                        <span class="badge" style="background:var(--pic-line);color:var(--pic-ink-soft);">Pendiente</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($r->enviado_a_bodega_especial)
-                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Enviada</span>
-                                    @else
-                                        <span class="badge" style="background:var(--pic-line);color:var(--pic-ink-soft);">Pendiente</span>
+                                        <span class="badge" style="background:var(--pic-amber-soft);color:var(--pic-amber)">En bodega</span>
                                     @endif
                                 </td>
                             </tr>
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="12">
+                                    <td colspan="10">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">General</span></div>
@@ -166,7 +160,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="12">No hay remisiones que coincidan con la búsqueda.</td></tr>
+                            <tr class="empty-row"><td colspan="10">No hay remisiones que coincidan con la búsqueda.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
