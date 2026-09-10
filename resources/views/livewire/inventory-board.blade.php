@@ -86,6 +86,12 @@
                 <option value="Todos">Todos los estatus</option>
                 <option>En bodega</option><option>Despachado</option><option>En tránsito</option><option>Reservado</option>
             </select>
+            <select class="f-estatus" wire:model.live="filterCliente">
+                <option value="Todos">Todos los clientes</option>
+                @foreach ($clientesFiltro as $c)
+                    <option value="{{ $c }}">{{ $c }}</option>
+                @endforeach
+            </select>
             <input type="date" wire:model.live="fechaDesde" title="Desde">
             <input type="date" wire:model.live="fechaHasta" title="Hasta">
             @if ($fechaDesde !== '' || $fechaHasta !== '')
@@ -102,7 +108,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Kg env.</th><th>Kg rec.</th><th>Ubicación</th><th>Cliente</th><th>Imov</th><th>Estatus</th><th>Progreso</th><th></th>
+                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Kg env.</th><th>Kg rec.</th><th class="num">Factor rec.</th><th>Ubicación</th><th>Cliente</th><th>Imov</th><th>Estatus</th><th>Progreso</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,6 +129,7 @@
                                 <td>{{ $r->calidad_enviada ?: '—' }}</td>
                                 <td class="mono num">{{ $r->kg_enviados ?: '0' }}</td>
                                 <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
+                                <td class="mono num">{{ $r->factor_rec ?: '—' }}</td>
                                 <td>
                                     @php $saldo = $r->kgDisponible(); @endphp
                                     @if ($r->isDespachadoDirecto())
@@ -168,7 +175,7 @@
 
                             @if ($confirmDeleteId === $r->id)
                                 <tr class="confirm-row">
-                                    <td colspan="11">
+                                    <td colspan="12">
                                         ¿Eliminar el registro {{ $r->remision ?: 'sin remisión' }}? Esta acción no se puede deshacer.
                                         <button type="button" class="btn-del-confirm" wire:click.stop="delete({{ $r->id }})">Eliminar</button>
                                         <button type="button" class="btn-del-cancel" wire:click.stop="cancelDelete">Cancelar</button>
@@ -178,7 +185,7 @@
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="11">
+                                    <td colspan="12">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío · {{ $r->analisis_enviado_por ?: '—' }}</span></div>
@@ -234,7 +241,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="11">No hay registros que coincidan con los filtros.</td></tr>
+                            <tr class="empty-row"><td colspan="12">No hay registros que coincidan con los filtros.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

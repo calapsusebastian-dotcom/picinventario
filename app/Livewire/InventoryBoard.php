@@ -16,6 +16,7 @@ class InventoryBoard extends Component
     public string $search = '';
     public string $filterAnio = 'Todos';
     public string $filterEstatus = 'Todos';
+    public string $filterCliente = 'Todos';
     public string $fechaDesde = '';
     public string $fechaHasta = '';
 
@@ -145,6 +146,7 @@ class InventoryBoard extends Component
         $allRecords = InventoryRecord::with('trillas.productos')->orderByDesc('fecha')->orderByDesc('id')->get();
 
         $years = $allRecords->pluck('anio')->filter()->unique()->sort()->values();
+        $clientesFiltro = $allRecords->pluck('cliente')->filter()->unique()->sort()->values();
 
         $filtered = $allRecords->filter(function (InventoryRecord $record) {
             if ($this->filterAnio !== 'Todos' && (string) $record->anio !== (string) $this->filterAnio) {
@@ -152,6 +154,10 @@ class InventoryBoard extends Component
             }
 
             if ($this->filterEstatus !== 'Todos' && $record->estatus !== $this->filterEstatus) {
+                return false;
+            }
+
+            if ($this->filterCliente !== 'Todos' && $record->cliente !== $this->filterCliente) {
                 return false;
             }
 
@@ -183,6 +189,7 @@ class InventoryBoard extends Component
         return view('livewire.inventory-board', [
             'records' => $filtered,
             'years' => $years,
+            'clientesFiltro' => $clientesFiltro,
             'summary' => $this->buildSummary($allRecords),
             'sections' => $sections,
             'productos' => Producto::orderBy('nombre')->pluck('nombre'),
