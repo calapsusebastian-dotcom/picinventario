@@ -10,8 +10,8 @@ class BodegaPage extends Component
 {
     public string $search = '';
 
-    /** @var string 'Todos'|'Pendiente'|'Enviada' — filters by the Despacho status badge. */
-    public string $filterDespacho = 'Todos';
+    /** @var string 'Todos' or one of the Ubicación badge labels. */
+    public string $filterUbicacion = 'Todos';
 
     public ?int $expandedRow = null;
 
@@ -75,6 +75,35 @@ class BodegaPage extends Component
         $this->selected = [];
     }
 
+    /**
+     * Where a remisión currently sits — same order of precedence the
+     * Ubicación badge uses in the view.
+     */
+    private function ubicacionDe(InventoryRecord $r): string
+    {
+        if ($r->isDespachadoDirecto()) {
+            return 'Despachado';
+        }
+
+        if ($r->enviado_a_despacho) {
+            return 'En despacho';
+        }
+
+        if (($r->kgDisponible() ?? 0) <= 0.001 && $r->trillas->isNotEmpty()) {
+            return 'Trillado';
+        }
+
+        if ($r->enviado_a_trilla) {
+            return 'En trilla';
+        }
+
+        if ($r->enviado_a_bodega_especial) {
+            return 'En bodega especial';
+        }
+
+        return 'En bodega';
+    }
+
     public function render()
     {
         $records = InventoryRecord::with('trillas')
@@ -83,11 +112,7 @@ class BodegaPage extends Component
             ->orderByDesc('id')
             ->get()
             ->filter(function (InventoryRecord $r) {
-                if ($this->filterDespacho === 'Pendiente' && $r->enviado_a_despacho) {
-                    return false;
-                }
-
-                if ($this->filterDespacho === 'Enviada' && ! $r->enviado_a_despacho) {
+                if ($this->filterUbicacion !== 'Todos' && $this->ubicacionDe($r) !== $this->filterUbicacion) {
                     return false;
                 }
 
