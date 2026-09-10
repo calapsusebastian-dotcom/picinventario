@@ -255,6 +255,7 @@
                     @endif
                 </table>
             </div>
+            {{ $records->links('livewire.pagination') }}
         </div>
 
     </div>

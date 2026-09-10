@@ -64,7 +64,7 @@
             </div>
         </div>
 
-        <div class="section-label">Movimientos de bodega especial ({{ $movimientos->count() }})</div>
+        <div class="section-label">Movimientos de bodega especial ({{ $movimientos->total() }})</div>
 
         <div class="table-card">
             <div class="table-scroll">
@@ -164,6 +164,7 @@
                     </tbody>
                 </table>
             </div>
+            {{ $movimientos->links('livewire.pagination') }}
         </div>
 
         @if (count($selected) > 0)

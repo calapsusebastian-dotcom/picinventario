@@ -3,11 +3,17 @@
 namespace App\Livewire;
 
 use App\Models\InventoryRecord;
-use App\Models\Trilla;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class BodegaEspecialPage extends Component
 {
+    use WithPagination;
+
+    protected string $paginationView = 'livewire.pagination';
+
     public string $search = '';
 
     public ?int $expandedRow = null;
@@ -18,6 +24,11 @@ class BodegaEspecialPage extends Component
     public function mount(): void
     {
         abort_unless(auth()->user()->isAdmin(), 403);
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
     }
 
     public function toggleExpand(int $id): void
@@ -70,44 +81,67 @@ class BodegaEspecialPage extends Component
         }
     }
 
+    private const DISP_EXPR = 'GREATEST(COALESCE(inventory_records.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)';
+
+    private function filteredQuery(): Builder
+    {
+        return InventoryRecord::query()
+            ->leftJoinSub(
+                DB::table('trilla_inventory_record')
+                    ->select('inventory_record_id')
+                    ->selectRaw('SUM(kg_usado) as usado')
+                    ->groupBy('inventory_record_id'),
+                'piv',
+                'piv.inventory_record_id',
+                '=',
+                'inventory_records.id'
+            )
+            ->with('trillas')
+            ->where('enviado_a_bodega_especial', true)
+            ->when($this->search !== '', function (Builder $q) {
+                $term = '%'.$this->search.'%';
+                $q->where(function (Builder $w) use ($term) {
+                    $w->where('remision', 'like', $term)
+                        ->orWhere('calidad_enviada', 'like', $term)
+                        ->orWhere('cliente', 'like', $term);
+                });
+            })
+            ->orderByDesc('fecha')
+            ->orderByDesc('id');
+    }
+
     public function render()
     {
-        $records = InventoryRecord::with('trillas')
-            ->where('enviado_a_bodega_especial', true)
-            ->orderByDesc('fecha')
-            ->orderByDesc('id')
-            ->get()
-            ->filter(function (InventoryRecord $r) {
-                if ($this->search === '') {
-                    return true;
-                }
+        $movimientos = $this->filteredQuery()
+            ->select('inventory_records.*')
+            ->selectRaw('COALESCE(piv.usado, 0) as kg_usado_trilla')
+            ->selectRaw(self::DISP_EXPR.' as saldo')
+            ->paginate(50)
+            ->through(fn (InventoryRecord $r) => [
+                'record' => $r,
+                'kg_recibido' => (float) $r->kg_recibidos,
+                'kg_usado_trilla' => (float) $r->kg_usado_trilla,
+                'saldo' => (float) $r->saldo,
+            ]);
 
-                $haystack = mb_strtolower(implode(' ', [
-                    $r->remision, $r->calidad_enviada, $r->cliente,
-                ]));
-
-                return str_contains($haystack, mb_strtolower($this->search));
-            })
-            ->map(function (InventoryRecord $r) {
-                $usado = (float) $r->trillas->sum(fn (Trilla $t) => (float) $t->pivot->kg_usado);
-
-                return [
-                    'record' => $r,
-                    'kg_recibido' => (float) $r->kg_recibidos,
-                    'kg_usado_trilla' => $usado,
-                    'saldo' => $r->kgDisponible() ?? 0,
-                ];
-            })
-            ->values();
+        $agg = $this->filteredQuery()
+            ->toBase()
+            ->reorder()
+            ->select(
+                DB::raw('COALESCE(SUM(inventory_records.kg_recibidos), 0) as kg_recibido'),
+                DB::raw('COALESCE(SUM(COALESCE(piv.usado, 0)), 0) as kg_usado_trilla'),
+                DB::raw('COALESCE(SUM('.self::DISP_EXPR.'), 0) as saldo'),
+            )
+            ->first();
 
         $totales = [
-            'kg_recibido' => $records->sum('kg_recibido'),
-            'kg_usado_trilla' => $records->sum('kg_usado_trilla'),
-            'saldo' => $records->sum('saldo'),
+            'kg_recibido' => (float) $agg->kg_recibido,
+            'kg_usado_trilla' => (float) $agg->kg_usado_trilla,
+            'saldo' => (float) $agg->saldo,
         ];
 
         return view('livewire.bodega-especial-page', [
-            'movimientos' => $records,
+            'movimientos' => $movimientos,
             'totales' => $totales,
         ]);
     }

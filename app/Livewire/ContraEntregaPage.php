@@ -3,10 +3,16 @@
 namespace App\Livewire;
 
 use App\Models\InventoryRecord;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class ContraEntregaPage extends Component
 {
+    use WithPagination;
+
+    protected string $paginationView = 'livewire.pagination';
+
     public string $search = '';
 
     public string $fechaDesde = '';
@@ -17,6 +23,13 @@ class ContraEntregaPage extends Component
     public function mount(): void
     {
         abort_unless(auth()->user()->isAdmin(), 403);
+    }
+
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['search', 'fechaDesde', 'fechaHasta'], true)) {
+            $this->resetPage();
+        }
     }
 
     public function limpiarFechas(): void
@@ -45,48 +58,54 @@ class ContraEntregaPage extends Component
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, array>
+     * Base query: only remisiones with both stages filled in, plus the
+     * date/search filters pushed down to SQL.
      */
-    private function buildComparaciones(): \Illuminate\Support\Collection
+    private function filteredQuery(): Builder
     {
         return InventoryRecord::query()
             ->whereNotNull('kg_enviados')
             ->whereNotNull('kg_recibidos')
-            ->when($this->fechaDesde !== '', fn ($q) => $q->whereDate('fecha', '>=', $this->fechaDesde))
-            ->when($this->fechaHasta !== '', fn ($q) => $q->whereDate('fecha', '<=', $this->fechaHasta))
+            ->when($this->fechaDesde !== '', fn (Builder $q) => $q->whereDate('fecha', '>=', $this->fechaDesde))
+            ->when($this->fechaHasta !== '', fn (Builder $q) => $q->whereDate('fecha', '<=', $this->fechaHasta))
+            ->when($this->search !== '', function (Builder $q) {
+                $term = '%'.$this->search.'%';
+                $q->where(function (Builder $w) use ($term) {
+                    $w->where('remision', 'like', $term)
+                        ->orWhere('cliente', 'like', $term)
+                        ->orWhere('calidad_enviada', 'like', $term)
+                        ->orWhere('ubicacion', 'like', $term);
+                });
+            })
             ->orderByDesc('fecha')
-            ->orderByDesc('id')
-            ->get()
-            ->filter(function (InventoryRecord $r) {
-                if ($this->search === '') {
-                    return true;
-                }
+            ->orderByDesc('id');
+    }
 
-                $haystack = mb_strtolower(implode(' ', [$r->remision, $r->cliente, $r->calidad_enviada, $r->ubicacion]));
+    /**
+     * Turns one remisión into the envío-vs-recepción comparison row.
+     *
+     * @return array<string, mixed>
+     */
+    private function comparacionDe(InventoryRecord $r): array
+    {
+        $diffKg = $this->diff((string) $r->kg_enviados, (string) $r->kg_recibidos);
+        $diffKgPct = $diffKg !== null && (float) $r->kg_enviados > 0
+            ? $diffKg / (float) $r->kg_enviados * 100
+            : null;
 
-                return str_contains($haystack, mb_strtolower($this->search));
-            })
-            ->map(function (InventoryRecord $r) {
-                $diffKg = $this->diff((string) $r->kg_enviados, (string) $r->kg_recibidos);
-                $diffKgPct = $diffKg !== null && (float) $r->kg_enviados > 0
-                    ? $diffKg / (float) $r->kg_enviados * 100
-                    : null;
-
-                return [
-                    'record' => $r,
-                    'diff_kg' => $diffKg,
-                    'diff_kg_pct' => $diffKgPct,
-                    'diff_factor' => $this->diff($r->factor_env, $r->factor_rec),
-                    'diff_humedad' => $this->diff($r->humedad_env, $r->humedad_rec),
-                    'diff_as' => $this->diff($r->as_env, $r->as_rec),
-                    'diff_pas' => $this->diff($r->pas_env, $r->pas_rec),
-                    'diff_pg' => $this->diff($r->pg_env, $r->pg_rec),
-                    'diff_broca' => $this->diff($r->broca_env, $r->broca_rec),
-                    'diff_puntaje_taza' => $this->diff($r->puntaje_taza_env, $r->puntaje_taza_rec),
-                    'taza_coincide' => $r->taza_env && $r->taza_rec ? $r->taza_env === $r->taza_rec : null,
-                ];
-            })
-            ->values();
+        return [
+            'record' => $r,
+            'diff_kg' => $diffKg,
+            'diff_kg_pct' => $diffKgPct,
+            'diff_factor' => $this->diff($r->factor_env, $r->factor_rec),
+            'diff_humedad' => $this->diff($r->humedad_env, $r->humedad_rec),
+            'diff_as' => $this->diff($r->as_env, $r->as_rec),
+            'diff_pas' => $this->diff($r->pas_env, $r->pas_rec),
+            'diff_pg' => $this->diff($r->pg_env, $r->pg_rec),
+            'diff_broca' => $this->diff($r->broca_env, $r->broca_rec),
+            'diff_puntaje_taza' => $this->diff($r->puntaje_taza_env, $r->puntaje_taza_rec),
+            'taza_coincide' => $r->taza_env && $r->taza_rec ? $r->taza_env === $r->taza_rec : null,
+        ];
     }
 
     /**
@@ -95,7 +114,8 @@ class ContraEntregaPage extends Component
      */
     public function exportar()
     {
-        $comparaciones = $this->buildComparaciones();
+        // Full filtered set, every page — not just what's on screen.
+        $comparaciones = $this->filteredQuery()->get()->map(fn (InventoryRecord $r) => $this->comparacionDe($r));
 
         $filename = 'contra-entrega-'.now()->format('Y-m-d_His').'.csv';
 
@@ -143,10 +163,14 @@ class ContraEntregaPage extends Component
 
     public function render()
     {
-        $comparaciones = $this->buildComparaciones();
+        $comparaciones = $this->filteredQuery()
+            ->paginate(50)
+            ->through(fn (InventoryRecord $r) => $this->comparacionDe($r));
 
-        $kgEnviadosTotal = (float) $comparaciones->sum(fn (array $c) => (float) $c['record']->kg_enviados);
-        $kgRecibidosTotal = (float) $comparaciones->sum(fn (array $c) => (float) $c['record']->kg_recibidos);
+        // KPIs arriba: sobre todo el conjunto filtrado, no solo la página.
+        $agg = $this->filteredQuery()->selectRaw('COALESCE(SUM(kg_enviados),0) e, COALESCE(SUM(kg_recibidos),0) r')->first();
+        $kgEnviadosTotal = (float) $agg->e;
+        $kgRecibidosTotal = (float) $agg->r;
         $diffKgTotal = $kgRecibidosTotal - $kgEnviadosTotal;
 
         $totales = [

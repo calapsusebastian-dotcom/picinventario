@@ -9,10 +9,17 @@ use App\Models\Producto;
 use App\Models\TrillaProducto;
 use App\Models\Ubicacion;
 use App\Support\InventoryStages;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class InventoryBoard extends Component
 {
+    use WithPagination;
+
+    protected string $paginationView = 'livewire.pagination';
+
     public string $search = '';
     public string $filterAnio = 'Todos';
     public string $filterEstatus = 'Todos';
@@ -78,6 +85,17 @@ class InventoryBoard extends Component
         $this->fechaHasta = '';
     }
 
+    /**
+     * Any filter change should send the table back to page 1, otherwise a
+     * narrower result set can leave you stranded on an empty page.
+     */
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['search', 'filterAnio', 'filterEstatus', 'filterCliente', 'fechaDesde', 'fechaHasta'], true)) {
+            $this->resetPage();
+        }
+    }
+
     public function toggleExpand(int $id): void
     {
         $this->expandedRow = $this->expandedRow === $id ? null : $id;
@@ -141,73 +159,65 @@ class InventoryBoard extends Component
         return $idx > 0 && ! $status[0];
     }
 
+    /**
+     * The records query with every active filter pushed down to SQL, so
+     * pagination and the totals aggregate over the real result set instead
+     * of loading the whole table into memory.
+     */
+    protected function filteredQuery(): Builder
+    {
+        return InventoryRecord::query()
+            ->when($this->filterAnio !== 'Todos', fn (Builder $q) => $q->where('anio', $this->filterAnio))
+            ->when($this->filterEstatus !== 'Todos', fn (Builder $q) => $q->where('estatus', $this->filterEstatus))
+            ->when($this->filterCliente !== 'Todos', fn (Builder $q) => $q->where('cliente', $this->filterCliente))
+            ->when($this->fechaDesde !== '', fn (Builder $q) => $q->whereDate('fecha', '>=', $this->fechaDesde))
+            ->when($this->fechaHasta !== '', fn (Builder $q) => $q->whereDate('fecha', '<=', $this->fechaHasta))
+            ->when($this->search !== '', function (Builder $q) {
+                $term = '%'.$this->search.'%';
+                $q->where(function (Builder $w) use ($term) {
+                    $w->where('remision', 'like', $term)
+                        ->orWhere('cliente', 'like', $term)
+                        ->orWhere('destino', 'like', $term)
+                        ->orWhere('negocio', 'like', $term)
+                        ->orWhere('calidad_enviada', 'like', $term);
+                });
+            });
+    }
+
     public function render()
     {
-        $allRecords = InventoryRecord::with('trillas.productos')->orderByDesc('fecha')->orderByDesc('id')->get();
+        $records = $this->filteredQuery()
+            ->with('trillas.productos')
+            ->orderByDesc('fecha')
+            ->orderByDesc('id')
+            ->paginate(50);
 
-        $years = $allRecords->pluck('anio')->filter()->unique()->sort()->values();
-        $clientesFiltro = $allRecords->pluck('cliente')->filter()->unique()->sort()->values();
+        // Totales de lo filtrado — sobre todo el conjunto, no solo la página.
+        $factorRow = $this->filteredQuery()
+            ->where('factor_rec', '>', 0)
+            ->where('kg_recibidos', '>', 0)
+            ->selectRaw('SUM(factor_rec * kg_recibidos) as num, SUM(kg_recibidos) as den')
+            ->first();
 
-        $filtered = $allRecords->filter(function (InventoryRecord $record) {
-            if ($this->filterAnio !== 'Todos' && (string) $record->anio !== (string) $this->filterAnio) {
-                return false;
-            }
-
-            if ($this->filterEstatus !== 'Todos' && $record->estatus !== $this->filterEstatus) {
-                return false;
-            }
-
-            if ($this->filterCliente !== 'Todos' && $record->cliente !== $this->filterCliente) {
-                return false;
-            }
-
-            if ($this->fechaDesde !== '' && (! $record->fecha || $record->fecha->lt($this->fechaDesde))) {
-                return false;
-            }
-
-            if ($this->fechaHasta !== '' && (! $record->fecha || $record->fecha->gt($this->fechaHasta))) {
-                return false;
-            }
-
-            if ($this->search !== '') {
-                $haystack = mb_strtolower(implode(' ', [
-                    $record->remision, $record->cliente, $record->destino, $record->negocio, $record->calidad_enviada,
-                ]));
-
-                if (! str_contains($haystack, mb_strtolower($this->search))) {
-                    return false;
-                }
-            }
-
-            return true;
-        })->values();
+        $filaTotales = [
+            'count' => $records->total(),
+            'kg_enviados' => (float) $this->filteredQuery()->sum('kg_enviados'),
+            'kg_recibidos' => (float) $this->filteredQuery()->sum('kg_recibidos'),
+            'factor_rec_ponderado' => ($factorRow && (float) $factorRow->den > 0)
+                ? (float) $factorRow->num / (float) $factorRow->den
+                : 0,
+        ];
 
         $sections = collect(InventoryStages::ORDER)
             ->map(fn (string $stage) => ['label' => InventoryStages::label($stage), 'role' => InventoryStages::roleLabel($stage)])
             ->all();
 
-        // Totales de lo que se está viendo ahora mismo (respeta los filtros),
-        // con el factor de recepción ponderado por kg recibidos.
-        $kgRecFiltrado = $filtered->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
-        $conFactor = $filtered->filter(
-            fn (InventoryRecord $r) => (float) $r->factor_rec > 0 && (float) $r->kg_recibidos > 0
-        );
-        $kgParaFactor = $conFactor->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
-        $filaTotales = [
-            'count' => $filtered->count(),
-            'kg_enviados' => $filtered->sum(fn (InventoryRecord $r) => (float) $r->kg_enviados),
-            'kg_recibidos' => $kgRecFiltrado,
-            'factor_rec_ponderado' => $kgParaFactor > 0
-                ? $conFactor->sum(fn (InventoryRecord $r) => (float) $r->factor_rec * (float) $r->kg_recibidos) / $kgParaFactor
-                : 0,
-        ];
-
         return view('livewire.inventory-board', [
-            'records' => $filtered,
-            'years' => $years,
-            'clientesFiltro' => $clientesFiltro,
+            'records' => $records,
+            'years' => InventoryRecord::query()->whereNotNull('anio')->distinct()->orderBy('anio')->pluck('anio'),
+            'clientesFiltro' => InventoryRecord::query()->whereNotNull('cliente')->where('cliente', '!=', '')->distinct()->orderBy('cliente')->pluck('cliente'),
             'filaTotales' => $filaTotales,
-            'summary' => $this->buildSummary($allRecords),
+            'summary' => $this->buildSummary(),
             'sections' => $sections,
             'productos' => Producto::orderBy('nombre')->pluck('nombre'),
             'clientes' => Cliente::orderBy('nombre')->pluck('nombre'),
@@ -215,74 +225,59 @@ class InventoryBoard extends Component
         ]);
     }
 
-    protected function buildSummary($allRecords): array
+    protected function buildSummary(): array
     {
-        $kgEnv = $allRecords->sum(fn (InventoryRecord $r) => (float) $r->kg_enviados);
+        // The KPI cards are global — they don't move with the table filters.
+        // One lightweight pass over plain rows (no model hydration, no
+        // relations): each remisión's "disponible" = kg recibidos minus what
+        // it has already given to trilla lotes, via a joined pivot subquery.
+        $rows = DB::table('inventory_records as ir')
+            ->leftJoinSub(
+                DB::table('trilla_inventory_record')
+                    ->select('inventory_record_id')
+                    ->selectRaw('SUM(kg_usado) as usado')
+                    ->groupBy('inventory_record_id'),
+                'piv',
+                'piv.inventory_record_id',
+                '=',
+                'ir.id'
+            )
+            ->selectRaw('
+                COUNT(*) as registros,
+                COALESCE(SUM(ir.kg_enviados), 0) as kg_enviados,
+                COALESCE(SUM(ir.kg_recibidos), 0) as kg_recibidos_total,
+                COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
+                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 0)), 0) as kg_en_bodega,
+                COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
+                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 1)), 0) as kg_en_bodega_especial,
+                COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
+                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 1)), 0) as kg_en_trilla,
+                COALESCE(SUM((ir.remision_despacho IS NOT NULL) * COALESCE(ir.kg_recibidos, 0)), 0) as kg_despachado_directo,
+                COALESCE(SUM((ir.enviado_a_despacho = 1 AND ir.remision_despacho IS NULL) * COALESCE(ir.kg_recibidos, 0)), 0) as kg_pendiente_despacho_directo,
+                COALESCE(SUM(CASE WHEN ir.factor_rec > 0 AND (COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0)) > 0
+                    THEN ir.factor_rec * (COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0)) ELSE 0 END), 0) as factor_num,
+                COALESCE(SUM(CASE WHEN ir.factor_rec > 0 AND (COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0)) > 0
+                    THEN (COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0)) ELSE 0 END), 0) as factor_den
+            ')
+            ->first();
 
-        // Kg that have gone into a trilla lote, or straight to despacho
-        // skipping trilla, no longer count here — a remisión can be
-        // partially trillada, so this sums whatever kg each one has left to
-        // give, not an all-or-nothing per record. Split by enviado_a_trilla
-        // so it's clear how much is still sitting in Bodega versus already
-        // released to Trilla's pool. Bodega Especial is a separate holding
-        // area in between — its own bucket, not "en bodega" nor "en trilla".
-        $enBodegaOTrilla = $allRecords->filter(fn (InventoryRecord $r) => ! $r->enviado_a_despacho);
-        $kgEnTrilla = $enBodegaOTrilla
-            ->filter(fn (InventoryRecord $r) => $r->enviado_a_trilla)
-            ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
-        $sinTrilla = $enBodegaOTrilla->filter(fn (InventoryRecord $r) => ! $r->enviado_a_trilla);
-        $kgEnBodegaEspecial = $sinTrilla
-            ->filter(fn (InventoryRecord $r) => $r->enviado_a_bodega_especial)
-            ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
-        $kgEnBodega = $sinTrilla
-            ->filter(fn (InventoryRecord $r) => ! $r->enviado_a_bodega_especial)
-            ->sum(fn (InventoryRecord $r) => $r->kgDisponible() ?? 0);
-        $kgRec = $kgEnBodega + $kgEnBodegaEspecial + $kgEnTrilla;
-
-        // "Sin despachar": everything still physically in the warehouse,
-        // whether it's raw kg recibidos that hasn't been trillado yet or
-        // trilla output that hasn't left via despacho. Despacho is the only
-        // step that actually removes kg from the warehouse — trilla just
-        // transforms it — so this is total kg recibidos minus total kg
-        // despachado (trilla output plus materia prima despachada directo),
-        // not scoped to the pre-trilla stage like kg_recibidos above.
-        $kgRecibidosTotal = $allRecords->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
         $kgDespachadoProductos = (float) TrillaProducto::whereNotNull('remision_despacho')->sum('kg');
-        $kgDespachadoDirecto = $allRecords
-            ->filter(fn (InventoryRecord $r) => $r->isDespachadoDirecto())
-            ->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
-        $existencia = max(0, $kgRecibidosTotal - $kgDespachadoProductos - $kgDespachadoDirecto);
+        $kgProductoPendiente = (float) TrillaProducto::whereNull('remision_despacho')->sum('kg');
 
-        // Trilla output that's already been produced but hasn't left via
-        // despacho yet, plus materia prima sent directo a despacho that
-        // hasn't shipped out either — the finished/pending-dispatch
-        // counterpart of kg_en_bodega / kg_en_trilla, one stage further down.
-        $kgEnDespacho = (float) TrillaProducto::whereNull('remision_despacho')->sum('kg')
-            + $allRecords
-                ->filter(fn (InventoryRecord $r) => $r->enviado_a_despacho && ! $r->isDespachadoDirecto())
-                ->sum(fn (InventoryRecord $r) => (float) $r->kg_recibidos);
-
-        // Factor ponderado por kg disponibles (pendientes de trilla): cada
-        // remisión pesa según cuánto le queda por trillar, no por su kg
-        // recibidos original — una vez trillada, ya no debe seguir pesando.
-        $conFactorRec = $allRecords->filter(
-            fn (InventoryRecord $r) => (float) $r->factor_rec > 0 && ($r->kgDisponible() ?? 0) > 0
-        );
-        $kgParaFactor = $conFactorRec->sum(fn (InventoryRecord $r) => $r->kgDisponible());
-        $factorPonderado = $kgParaFactor > 0
-            ? $conFactorRec->sum(fn (InventoryRecord $r) => (float) $r->factor_rec * $r->kgDisponible()) / $kgParaFactor
-            : 0;
+        $kgEnBodega = (float) $rows->kg_en_bodega;
+        $kgEnBodegaEspecial = (float) $rows->kg_en_bodega_especial;
+        $kgEnTrilla = (float) $rows->kg_en_trilla;
 
         return [
-            'registros' => $allRecords->count(),
-            'kg_enviados' => $kgEnv,
-            'kg_recibidos' => $kgRec,
+            'registros' => (int) $rows->registros,
+            'kg_enviados' => (float) $rows->kg_enviados,
+            'kg_recibidos' => $kgEnBodega + $kgEnBodegaEspecial + $kgEnTrilla,
             'kg_en_bodega' => $kgEnBodega,
             'kg_en_bodega_especial' => $kgEnBodegaEspecial,
             'kg_en_trilla' => $kgEnTrilla,
-            'kg_en_despacho' => $kgEnDespacho,
-            'existencia' => $existencia,
-            'factor_promedio' => $factorPonderado,
+            'kg_en_despacho' => $kgProductoPendiente + (float) $rows->kg_pendiente_despacho_directo,
+            'existencia' => max(0, (float) $rows->kg_recibidos_total - $kgDespachadoProductos - (float) $rows->kg_despachado_directo),
+            'factor_promedio' => (float) $rows->factor_den > 0 ? (float) $rows->factor_num / (float) $rows->factor_den : 0,
         ];
     }
 }

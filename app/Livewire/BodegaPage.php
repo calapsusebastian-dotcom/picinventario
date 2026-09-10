@@ -3,11 +3,17 @@
 namespace App\Livewire;
 
 use App\Models\InventoryRecord;
-use App\Models\Trilla;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class BodegaPage extends Component
 {
+    use WithPagination;
+
+    protected string $paginationView = 'livewire.pagination';
+
     public string $search = '';
 
     /** @var string 'Todos' or one of the Ubicación badge labels. */
@@ -21,6 +27,13 @@ class BodegaPage extends Component
     public function mount(): void
     {
         abort_unless(auth()->user()->isAdmin(), 403);
+    }
+
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['search', 'filterUbicacion'], true)) {
+            $this->resetPage();
+        }
     }
 
     public function toggleExpand(int $id): void
@@ -75,77 +88,92 @@ class BodegaPage extends Component
         $this->selected = [];
     }
 
+    /** SQL expression for kg still available (recibidos − usado en trillas), clamped at 0. */
+    private const DISP_EXPR = 'GREATEST(COALESCE(inventory_records.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)';
+
+    /** SQL expression: the remisión is fully trillada (has lote history and no saldo left). */
+    private const TRILLADO_EXPR = '(piv.usado IS NOT NULL AND '.self::DISP_EXPR.' <= 0.001)';
+
     /**
-     * Where a remisión currently sits — same order of precedence the
-     * Ubicación badge uses in the view.
+     * Base query with the pivot's kg_usado joined in, so saldo and the
+     * Ubicación filter can be resolved in SQL instead of PHP.
      */
-    private function ubicacionDe(InventoryRecord $r): string
+    private function filteredQuery(): Builder
     {
-        if ($r->isDespachadoDirecto()) {
-            return 'Despachado';
-        }
+        $trillado = self::TRILLADO_EXPR;
 
-        if ($r->enviado_a_despacho) {
-            return 'En despacho';
-        }
-
-        if (($r->kgDisponible() ?? 0) <= 0.001 && $r->trillas->isNotEmpty()) {
-            return 'Trillado';
-        }
-
-        if ($r->enviado_a_trilla) {
-            return 'En trilla';
-        }
-
-        if ($r->enviado_a_bodega_especial) {
-            return 'En bodega especial';
-        }
-
-        return 'En bodega';
+        return InventoryRecord::query()
+            ->leftJoinSub(
+                DB::table('trilla_inventory_record')
+                    ->select('inventory_record_id')
+                    ->selectRaw('SUM(kg_usado) as usado')
+                    ->groupBy('inventory_record_id'),
+                'piv',
+                'piv.inventory_record_id',
+                '=',
+                'inventory_records.id'
+            )
+            ->with('trillas')
+            ->whereNotNull('kg_recibidos')
+            ->when($this->search !== '', function (Builder $q) {
+                $term = '%'.$this->search.'%';
+                $q->where(function (Builder $w) use ($term) {
+                    $w->where('remision', 'like', $term)
+                        ->orWhere('calidad_enviada', 'like', $term)
+                        ->orWhere('cliente', 'like', $term);
+                });
+            })
+            ->when($this->filterUbicacion === 'Despachado', fn (Builder $q) => $q->whereNotNull('remision_despacho'))
+            ->when($this->filterUbicacion === 'En despacho', fn (Builder $q) => $q
+                ->whereNull('remision_despacho')->where('enviado_a_despacho', true))
+            ->when($this->filterUbicacion === 'Trillado', fn (Builder $q) => $q
+                ->whereNull('remision_despacho')->where('enviado_a_despacho', false)->whereRaw($trillado))
+            ->when($this->filterUbicacion === 'En trilla', fn (Builder $q) => $q
+                ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
+                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', true))
+            ->when($this->filterUbicacion === 'En bodega especial', fn (Builder $q) => $q
+                ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
+                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)->where('enviado_a_bodega_especial', true))
+            ->when($this->filterUbicacion === 'En bodega', fn (Builder $q) => $q
+                ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
+                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)->where('enviado_a_bodega_especial', false))
+            ->orderByDesc('fecha')
+            ->orderByDesc('id');
     }
 
     public function render()
     {
-        $records = InventoryRecord::with('trillas')
-            ->whereNotNull('kg_recibidos')
-            ->orderByDesc('fecha')
-            ->orderByDesc('id')
-            ->get()
-            ->filter(function (InventoryRecord $r) {
-                if ($this->filterUbicacion !== 'Todos' && $this->ubicacionDe($r) !== $this->filterUbicacion) {
-                    return false;
-                }
+        $movimientos = $this->filteredQuery()
+            ->select('inventory_records.*')
+            ->selectRaw('COALESCE(piv.usado, 0) as kg_usado_trilla')
+            ->selectRaw(self::DISP_EXPR.' as saldo')
+            ->paginate(50)
+            ->through(fn (InventoryRecord $r) => [
+                'record' => $r,
+                'kg_recibido' => (float) $r->kg_recibidos,
+                'kg_usado_trilla' => (float) $r->kg_usado_trilla,
+                'saldo' => (float) $r->saldo,
+            ]);
 
-                if ($this->search === '') {
-                    return true;
-                }
-
-                $haystack = mb_strtolower(implode(' ', [
-                    $r->remision, $r->calidad_enviada, $r->cliente,
-                ]));
-
-                return str_contains($haystack, mb_strtolower($this->search));
-            })
-            ->map(function (InventoryRecord $r) {
-                $usado = (float) $r->trillas->sum(fn (Trilla $t) => (float) $t->pivot->kg_usado);
-
-                return [
-                    'record' => $r,
-                    'kg_recibido' => (float) $r->kg_recibidos,
-                    'kg_usado_trilla' => $usado,
-                    'saldo' => $r->kgDisponible() ?? 0,
-                ];
-            })
-            ->values();
+        // KPIs sobre todo el conjunto filtrado (todas las páginas).
+        $agg = $this->filteredQuery()
+            ->toBase()
+            ->reorder()
+            ->select(
+                DB::raw('COALESCE(SUM(inventory_records.kg_recibidos), 0) as kg_recibido'),
+                DB::raw('COALESCE(SUM(COALESCE(piv.usado, 0)), 0) as kg_usado_trilla'),
+                DB::raw('COALESCE(SUM('.self::DISP_EXPR.'), 0) as saldo'),
+            )
+            ->first();
 
         $totales = [
-            'kg_recibido' => $records->sum('kg_recibido'),
-            'kg_usado_trilla' => $records->sum('kg_usado_trilla'),
-            'saldo' => $records->sum('saldo'),
+            'kg_recibido' => (float) $agg->kg_recibido,
+            'kg_usado_trilla' => (float) $agg->kg_usado_trilla,
+            'saldo' => (float) $agg->saldo,
         ];
 
         return view('livewire.bodega-page', [
-            'movimientos' => $records,
+            'movimientos' => $movimientos,
             'totales' => $totales,
         ]);
     }

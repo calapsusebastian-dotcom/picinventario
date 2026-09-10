@@ -90,7 +90,7 @@
             @endif
         </div>
 
-        <div class="section-label">Envío vs. Recepción ({{ $comparaciones->count() }})</div>
+        <div class="section-label">Envío vs. Recepción ({{ $comparaciones->total() }})</div>
 
         <div class="table-card">
             <div class="table-scroll">
@@ -204,6 +204,7 @@
                     </tbody>
                 </table>
             </div>
+            {{ $comparaciones->links('livewire.pagination') }}
         </div>
 
     </div>
