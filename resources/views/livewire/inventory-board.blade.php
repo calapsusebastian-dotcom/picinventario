@@ -120,7 +120,7 @@
                                 $stages = $r->stageStatus();
                                 $done = count(array_filter($stages));
                             @endphp
-                            <tr class="data-row" wire:click="toggleExpand({{ $r->id }})">
+                            <tr class="data-row{{ $r->isDespachadoDirecto() ? ' row-despachado' : '' }}" wire:click="toggleExpand({{ $r->id }})">
                                 <td class="mono">{{ $r->fecha?->format('Y-m-d') ?? '—' }}</td>
                                 <td class="mono">
                                     {{ $r->remision ?: '—' }}

@@ -90,7 +90,7 @@
                                 $r = $mov['record'];
                                 $col = $statusColor($r->estatus);
                             @endphp
-                            <tr class="data-row" wire:key="mov-{{ $r->id }}" wire:click="toggleExpand({{ $r->id }})">
+                            <tr class="data-row{{ $r->isDespachadoDirecto() ? ' row-despachado' : '' }}" wire:key="mov-{{ $r->id }}" wire:click="toggleExpand({{ $r->id }})">
                                 <td class="checkbox-cell" @click.stop="null">
                                     @if ($mov['saldo'] > 0.001 && ! $r->enviado_a_trilla && ! $r->enviado_a_despacho && ! $r->enviado_a_bodega_especial && ! $r->enviado_a_bodega_almacafe)
                                         <input type="checkbox" wire:model.live="selected" value="{{ $r->id }}">

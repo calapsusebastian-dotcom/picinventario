@@ -61,6 +61,8 @@
 .pic-board td{padding:13px 16px;font-size:13.5px;border-bottom:1px solid var(--pic-line);}
 .pic-board tbody tr.data-row{cursor:pointer;transition:background .1s;}
 .pic-board tbody tr.data-row:hover{background:#FAFBF8;}
+.pic-board tbody tr.data-row.row-despachado{background:#F0FAF6;}
+.pic-board tbody tr.data-row.row-despachado:hover{background:#E3F5EC;}
 .pic-board tfoot tr.totales-row td{background:#FAFBF8;font-weight:700;border-top:2px solid var(--pic-line-strong);border-bottom:none;color:var(--pic-ink);}
 .pic-board .mono{font-family:var(--pic-font-mono);font-size:12.5px;}
 .pic-board .num{text-align:right;}
