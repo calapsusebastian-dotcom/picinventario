@@ -21,6 +21,7 @@ class DespachoPage extends Component
 
     public string $remision_despacho = '';
     public string $destino = '';
+    public string $numero_factura = '';
 
     public function mount(): void
     {
@@ -35,6 +36,7 @@ class DespachoPage extends Component
         $this->editingRecordId = null;
         $this->remision_despacho = $producto->remision_despacho ?? '';
         $this->destino = $producto->destino ?? '';
+        $this->numero_factura = $producto->numero_factura ?? '';
         $this->showDrawer = true;
     }
 
@@ -49,6 +51,7 @@ class DespachoPage extends Component
         $this->editingProductoId = null;
         $this->remision_despacho = $record->remision_despacho ?? '';
         $this->destino = $record->destino ?? '';
+        $this->numero_factura = $record->numero_factura ?? '';
         $this->showDrawer = true;
     }
 
@@ -78,6 +81,7 @@ class DespachoPage extends Component
             $validated = $this->validate([
                 'remision_despacho' => ['required', 'string', 'max:255'],
                 'destino' => ['nullable', 'string', 'max:255'],
+                'numero_factura' => ['nullable', 'string', 'max:255'],
             ]);
 
             $record = InventoryRecord::findOrFail($this->editingRecordId);
@@ -96,6 +100,7 @@ class DespachoPage extends Component
         $validated = $this->validate([
             'remision_despacho' => ['required', 'string', 'max:255'],
             'destino' => ['nullable', 'string', 'max:255'],
+            'numero_factura' => ['nullable', 'string', 'max:255'],
         ]);
 
         $producto = TrillaProducto::findOrFail($this->editingProductoId);
@@ -124,7 +129,7 @@ class DespachoPage extends Component
     public function revert(int $id): void
     {
         $producto = TrillaProducto::findOrFail($id);
-        $producto->update(['remision_despacho' => null, 'destino' => null, 'despachado_at' => null]);
+        $producto->update(['remision_despacho' => null, 'destino' => null, 'numero_factura' => null, 'despachado_at' => null]);
 
         $producto->trilla?->syncRecordsEstatus();
 
@@ -145,6 +150,7 @@ class DespachoPage extends Component
     {
         InventoryRecord::whereKey($id)->update([
             'remision_despacho' => null,
+            'numero_factura' => null,
             'fecha_despacho' => null,
             'estatus' => 'En bodega',
         ]);
@@ -185,6 +191,7 @@ class DespachoPage extends Component
                     $p->nombre,
                     $p->remision_despacho,
                     $p->destino,
+                    $p->numero_factura,
                     $p->trilla?->inventoryRecords->pluck('remision')->implode(' '),
                 ]));
 
@@ -216,7 +223,7 @@ class DespachoPage extends Component
                     return true;
                 }
 
-                $haystack = mb_strtolower(implode(' ', [$r->remision, $r->calidad_enviada, $r->cliente, $r->remision_despacho]));
+                $haystack = mb_strtolower(implode(' ', [$r->remision, $r->calidad_enviada, $r->cliente, $r->remision_despacho, $r->numero_factura]));
 
                 return str_contains($haystack, mb_strtolower($this->search));
             })

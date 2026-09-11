@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TrillaProducto extends Model
 {
-    protected $fillable = ['trilla_id', 'nombre', 'kg', 'factor', 'remision_despacho', 'destino', 'despachado_at'];
+    protected $fillable = ['trilla_id', 'nombre', 'kg', 'factor', 'remision_despacho', 'destino', 'numero_factura', 'despachado_at'];
 
     protected $casts = [
         'kg' => 'decimal:2',

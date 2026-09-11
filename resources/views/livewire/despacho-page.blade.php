@@ -83,7 +83,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Producto</th><th>Kg</th><th>Estado</th><th>Remisión despacho</th><th>Destino</th><th>Lote</th><th>Remisiones de origen</th><th></th>
+                            <th>Producto</th><th>Kg</th><th>Estado</th><th>Remisión despacho</th><th>Destino</th><th>N° factura</th><th>Lote</th><th>Remisiones de origen</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -94,6 +94,7 @@
                                 <td><span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachada</span></td>
                                 <td class="mono">{{ $p->remision_despacho }}</td>
                                 <td>{{ $p->destino ?: '—' }}</td>
+                                <td class="mono">{{ $p->numero_factura ?: '—' }}</td>
                                 <td class="mono">{{ $p->trilla ? '#'.$p->trilla_id : '—' }}</td>
                                 <td>{{ $p->trilla?->inventoryRecords->pluck('remision')->implode(', ') ?: '—' }}</td>
                                 <td>
@@ -108,7 +109,7 @@
 
                             @if ($confirmRevertId === $p->id)
                                 <tr class="confirm-row">
-                                    <td colspan="8">
+                                    <td colspan="9">
                                         ¿Revertir el despacho de "{{ $p->nombre }}"? Vuelve a quedar pendiente de despacho. Esta acción no se puede deshacer.
                                         <button type="button" class="btn-del-confirm" wire:click.stop="revert({{ $p->id }})">Revertir</button>
                                         <button type="button" class="btn-del-cancel" wire:click.stop="cancelRevert">Cancelar</button>
@@ -116,7 +117,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="8">Aún no se ha despachado ningún producto.</td></tr>
+                            <tr class="empty-row"><td colspan="9">Aún no se ha despachado ningún producto.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -165,7 +166,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Remisión</th><th>Calidad</th><th class="num">Kg recibidos</th><th>Cliente</th><th>Destino</th><th>Remisión despacho</th><th></th>
+                            <th>Remisión</th><th>Calidad</th><th class="num">Kg recibidos</th><th>Cliente</th><th>Destino</th><th>Remisión despacho</th><th>N° factura</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -177,6 +178,7 @@
                                 <td>{{ $r->cliente ?: '—' }}</td>
                                 <td>{{ $r->destino ?: '—' }}</td>
                                 <td class="mono">{{ $r->remision_despacho }}</td>
+                                <td class="mono">{{ $r->numero_factura ?: '—' }}</td>
                                 <td>
                                     <button type="button" class="icon-btn" title="Editar despacho" wire:click.stop="openEditRecord({{ $r->id }})">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -189,7 +191,7 @@
 
                             @if ($confirmRevertRecordId === $r->id)
                                 <tr class="confirm-row">
-                                    <td colspan="7">
+                                    <td colspan="8">
                                         ¿Revertir el despacho de la remisión "{{ $r->remision }}"? Vuelve a quedar pendiente de despacho. Esta acción no se puede deshacer.
                                         <button type="button" class="btn-del-confirm" wire:click.stop="revertRecord({{ $r->id }})">Revertir</button>
                                         <button type="button" class="btn-del-cancel" wire:click.stop="cancelRevertRecord">Cancelar</button>
@@ -197,7 +199,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="7">Aún no se ha despachado materia prima directo.</td></tr>
+                            <tr class="empty-row"><td colspan="8">Aún no se ha despachado materia prima directo.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -277,6 +279,11 @@
                             @endforeach
                         </select>
                         @error('destino') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                    </div>
+                    <div class="field">
+                        <label>Número de factura</label>
+                        <input wire:model="numero_factura" placeholder="F-0000">
+                        @error('numero_factura') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                     </div>
                 </div>
             </form>
