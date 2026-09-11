@@ -101,6 +101,11 @@
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
             @endif
+            <button type="button" class="btn-secondary" wire:click="descargarPdf" wire:loading.attr="disabled" wire:target="descargarPdf">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                <span wire:loading.remove wire:target="descargarPdf">Descargar PDF</span>
+                <span wire:loading wire:target="descargarPdf">Generando…</span>
+            </button>
         </div>
 
         <div class="section-label">Tablero de registros</div>

@@ -98,6 +98,42 @@ class InventoryRecord extends Model
         return (bool) $this->remision_despacho;
     }
 
+    /**
+     * Plain-text version of the "Ubicación" pipeline badge shown across the
+     * Tablero and bodega pages — used where a colored badge doesn't apply,
+     * like PDF exports.
+     */
+    public function ubicacionLabel(): string
+    {
+        if ($this->isDespachadoDirecto()) {
+            return 'Despachado';
+        }
+
+        if ($this->enviado_a_despacho) {
+            return 'En despacho';
+        }
+
+        $saldo = $this->kgDisponible();
+
+        if ($saldo === null || $saldo <= 0.001) {
+            return $this->trillas->isNotEmpty() ? 'Trillado' : '—';
+        }
+
+        if ($this->enviado_a_trilla) {
+            return 'En trilla';
+        }
+
+        if ($this->enviado_a_bodega_especial) {
+            return 'En bodega especial';
+        }
+
+        if ($this->enviado_a_bodega_almacafe) {
+            return 'En bodega almacafe';
+        }
+
+        return 'En bodega';
+    }
+
     protected function kgUsadoEnTrillas(): float
     {
         return $this->relationLoaded('trillas')

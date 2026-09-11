@@ -9,6 +9,7 @@ use App\Models\Producto;
 use App\Models\TrillaProducto;
 use App\Models\Ubicacion;
 use App\Support\InventoryStages;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -223,6 +224,84 @@ class InventoryBoard extends Component
             'clientes' => Cliente::orderBy('nombre')->pluck('nombre'),
             'ubicaciones' => Ubicacion::orderBy('nombre')->pluck('nombre'),
         ]);
+    }
+
+    /**
+     * PDF export of the currently filtered result set (not just the current
+     * page) plus the same totals shown in the table's footer row.
+     */
+    public function descargarPdf()
+    {
+        $registros = $this->filteredQuery()
+            ->with('trillas')
+            ->orderByDesc('fecha')
+            ->orderByDesc('id')
+            ->get();
+
+        $factorRow = $this->filteredQuery()
+            ->where('factor_rec', '>', 0)
+            ->where('kg_recibidos', '>', 0)
+            ->selectRaw('SUM(factor_rec * kg_recibidos) as num, SUM(kg_recibidos) as den')
+            ->first();
+
+        $totales = [
+            'count' => $registros->count(),
+            'kg_enviados' => (float) $registros->sum('kg_enviados'),
+            'kg_recibidos' => (float) $registros->sum('kg_recibidos'),
+            'factor_rec_ponderado' => ($factorRow && (float) $factorRow->den > 0)
+                ? (float) $factorRow->num / (float) $factorRow->den
+                : 0,
+        ];
+
+        $pdf = Pdf::loadView('pdf.inventario-tablero', [
+            'registros' => $registros,
+            'totales' => $totales,
+            'filtros' => $this->filtrosAplicados(),
+            'generadoEn' => now(),
+            'usuario' => auth()->user()->name,
+        ])->setPaper('a4', 'landscape');
+
+        $contenido = $pdf->output();
+
+        return response()->streamDownload(
+            fn () => print ($contenido),
+            'tablero-inventario-'.now()->format('Y-m-d-His').'.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
+    }
+
+    /**
+     * Human-readable summary of the active filters, for the PDF header.
+     */
+    protected function filtrosAplicados(): array
+    {
+        $filtros = [];
+
+        if ($this->filterAnio !== 'Todos') {
+            $filtros[] = 'Año: '.$this->filterAnio;
+        }
+
+        if ($this->filterEstatus !== 'Todos') {
+            $filtros[] = 'Estatus: '.$this->filterEstatus;
+        }
+
+        if ($this->filterCliente !== 'Todos') {
+            $filtros[] = 'Cliente: '.$this->filterCliente;
+        }
+
+        if ($this->fechaDesde !== '') {
+            $filtros[] = 'Desde: '.$this->fechaDesde;
+        }
+
+        if ($this->fechaHasta !== '') {
+            $filtros[] = 'Hasta: '.$this->fechaHasta;
+        }
+
+        if ($this->search !== '') {
+            $filtros[] = 'Búsqueda: "'.$this->search.'"';
+        }
+
+        return $filtros;
     }
 
     protected function buildSummary(): array
