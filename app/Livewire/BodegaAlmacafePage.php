@@ -162,25 +162,50 @@ class BodegaAlmacafePage extends Component
                 'saldo' => (float) $r->saldo,
             ]);
 
-        $agg = $this->filteredQuery()
-            ->toBase()
-            ->reorder()
-            ->select(
-                DB::raw('COALESCE(SUM(inventory_records.kg_recibidos), 0) as kg_recibido'),
-                DB::raw('COALESCE(SUM(COALESCE(piv.usado, 0)), 0) as kg_usado_trilla'),
-                DB::raw('COALESCE(SUM('.self::DISP_EXPR.'), 0) as saldo'),
-            )
-            ->first();
-
-        $totales = [
-            'kg_recibido' => (float) $agg->kg_recibido,
-            'kg_usado_trilla' => (float) $agg->kg_usado_trilla,
-            'saldo' => (float) $agg->saldo,
-        ];
-
         return view('livewire.bodega-almacafe-page', [
             'movimientos' => $movimientos,
-            'totales' => $totales,
+            'totales' => $this->globalTotales(),
         ]);
+    }
+
+    /**
+     * The 3 header KPIs — always over everything ever sent to this bodega
+     * (never scoped by the search box), so they read as a fixed reference.
+     *
+     * "kg_usado_trilla" here means kg actually *released* to Trilla
+     * (enviado_a_trilla = true), not kg Trilla has already pivoted/consumed
+     * — and "saldo" only counts remisiones still sitting here, not yet sent
+     * onward to Trilla or Despacho.
+     */
+    private function globalTotales(): array
+    {
+        $row = InventoryRecord::query()
+            ->leftJoinSub(
+                DB::table('trilla_inventory_record')
+                    ->select('inventory_record_id')
+                    ->selectRaw('SUM(kg_usado) as usado')
+                    ->groupBy('inventory_record_id'),
+                'piv',
+                'piv.inventory_record_id',
+                '=',
+                'inventory_records.id'
+            )
+            ->where('enviado_a_bodega_almacafe', true)
+            ->toBase()
+            ->selectRaw('
+                COALESCE(SUM(inventory_records.kg_recibidos), 0) as kg_recibido,
+                COALESCE(SUM(CASE WHEN inventory_records.enviado_a_trilla = 1
+                    THEN inventory_records.kg_recibidos ELSE 0 END), 0) as kg_enviado_trilla,
+                COALESCE(SUM(CASE WHEN inventory_records.enviado_a_trilla = 0
+                    AND inventory_records.enviado_a_despacho = 0
+                    THEN '.self::DISP_EXPR.' ELSE 0 END), 0) as saldo
+            ')
+            ->first();
+
+        return [
+            'kg_recibido' => (float) $row->kg_recibido,
+            'kg_usado_trilla' => (float) $row->kg_enviado_trilla,
+            'saldo' => (float) $row->saldo,
+        ];
     }
 }
