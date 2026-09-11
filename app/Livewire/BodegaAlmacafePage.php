@@ -21,6 +21,9 @@ class BodegaAlmacafePage extends Component
     /** @var array<int, int|string> Selected InventoryRecord ids to release to Trilla/Despacho. */
     public array $selected = [];
 
+    public bool $showEnviarATrillaModal = false;
+    public string $remisionEnvioTrilla = '';
+
     public function mount(): void
     {
         abort_unless(auth()->user()->isAdmin(), 403);
@@ -37,18 +40,53 @@ class BodegaAlmacafePage extends Component
     }
 
     /**
-     * Release the selected remisiones into Trilla's pool, same as from the
-     * regular Bodega.
+     * Before releasing the selection to Trilla, ask for the remisión that
+     * covers this physical shipment from bodega to the trilladora.
      */
-    public function enviarATrilla(): void
+    public function abrirEnviarATrilla(): void
     {
         if (empty($this->selected)) {
             return;
         }
 
-        InventoryRecord::whereIn('id', $this->selected)->update(['enviado_a_trilla' => true]);
+        $this->resetErrorBag('remisionEnvioTrilla');
+        $this->remisionEnvioTrilla = '';
+        $this->showEnviarATrillaModal = true;
+    }
+
+    public function cancelarEnviarATrilla(): void
+    {
+        $this->showEnviarATrillaModal = false;
+        $this->remisionEnvioTrilla = '';
+        $this->resetErrorBag('remisionEnvioTrilla');
+    }
+
+    /**
+     * Release the selected remisiones into Trilla's pool, same as from the
+     * regular Bodega.
+     */
+    public function confirmarEnviarATrilla(): void
+    {
+        $this->validate([
+            'remisionEnvioTrilla' => ['required', 'string', 'max:255'],
+        ], [
+            'remisionEnvioTrilla.required' => 'Ingresa el número de remisión de este envío.',
+        ]);
+
+        if (empty($this->selected)) {
+            $this->showEnviarATrillaModal = false;
+
+            return;
+        }
+
+        InventoryRecord::whereIn('id', $this->selected)->update([
+            'enviado_a_trilla' => true,
+            'remision_envio_trilla' => $this->remisionEnvioTrilla,
+        ]);
 
         $this->selected = [];
+        $this->remisionEnvioTrilla = '';
+        $this->showEnviarATrillaModal = false;
     }
 
     /**

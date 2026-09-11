@@ -14,7 +14,7 @@ class InventoryRecord extends Model
         'analisis_recibido_por', 'kg_recibidos',
         'as_rec', 'pas_rec', 'pg_rec', 'broca_rec', 'humedad_rec', 'factor_rec', 'taza_rec', 'puntaje_taza_rec',
         'destino', 'cliente', 'negocio', 'estatus', 'existencia', 'taza_destino', 'puntaje_taza_destino',
-        'imov', 'enviado_a_trilla',
+        'imov', 'enviado_a_trilla', 'remision_envio_trilla',
         'enviado_a_despacho', 'remision_despacho', 'numero_factura', 'fecha_despacho',
         'enviado_a_bodega_especial', 'enviado_a_bodega_almacafe',
     ];

@@ -144,6 +144,9 @@
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-accent)"></span><span class="detail-title">Bodega Almacafe (saldo)</span></div>
                                                 <div class="detail-item"><span>Kg recibidos</span><span>{{ number_format($mov['kg_recibido'], 2, ',', '.') }} kg</span></div>
                                                 <div class="detail-item"><span>Kg enviados a trilla</span><span>{{ number_format($mov['kg_usado_trilla'], 2, ',', '.') }} kg</span></div>
+                                                @if ($r->remision_envio_trilla)
+                                                    <div class="detail-item"><span>Remisión envío a trilla</span><span>{{ $r->remision_envio_trilla }}</span></div>
+                                                @endif
                                                 <div class="detail-item" style="border-top:1px solid var(--pic-line);margin-top:6px;padding-top:8px;"><span style="font-weight:700;">Saldo</span><span style="font-weight:700;">{{ number_format($mov['saldo'], 2, ',', '.') }} kg</span></div>
                                             </div>
                                             @if ($r->trillas->isNotEmpty())
@@ -170,7 +173,7 @@
         @if (count($selected) > 0)
             <div class="selection-bar">
                 <span>{{ count($selected) }} remisión(es) seleccionada(s)</span>
-                <button type="button" class="btn-primary" wire:click="enviarATrilla">
+                <button type="button" class="btn-primary" wire:click="abrirEnviarATrilla">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
                     Enviar a trilla
                 </button>
@@ -181,5 +184,31 @@
             </div>
         @endif
 
+    </div>
+
+    {{-- Enviar a trilla: pide la remisión del envío antes de confirmar --}}
+    <div class="overlay overlay-center{{ $showEnviarATrillaModal ? ' open' : '' }}" wire:click.self="cancelarEnviarATrilla">
+        <div class="mini-modal">
+            <div class="mini-modal-header">
+                <h2>Enviar a trilla</h2>
+                <button type="button" wire:click="cancelarEnviarATrilla">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form wire:submit.prevent="confirmarEnviarATrilla">
+                <div class="mini-modal-body">
+                    <p style="margin:0 0 14px;font-size:13px;color:var(--pic-ink-soft);">{{ count($selected) }} remisión(es) seleccionada(s). Indica la remisión de este envío a la trilladora.</p>
+                    <div class="field">
+                        <label>Número de remisión</label>
+                        <input wire:model="remisionEnvioTrilla" placeholder="R-0000" autofocus>
+                        @error('remisionEnvioTrilla') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
+                    </div>
+                </div>
+                <div class="mini-modal-footer">
+                    <button type="button" class="btn-secondary" wire:click="cancelarEnviarATrilla">Cancelar</button>
+                    <button type="submit" class="btn-primary">Confirmar envío</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

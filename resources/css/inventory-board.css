@@ -22,6 +22,8 @@
 .pic-board .subtitle{margin:1px 0 0;font-size:13px;color:var(--pic-ink-soft);}
 .pic-board .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--pic-accent);color:#fff;border:none;border-radius:12px;padding:10px 18px;font-size:14px;font-weight:600;font-family:var(--pic-font);cursor:pointer;box-shadow:var(--pic-shadow-sm);transition:background .12s;}
 .pic-board .btn-primary:hover{background:var(--pic-accent-deep);}
+.pic-board .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--pic-ink);border:1px solid var(--pic-line-strong);border-radius:12px;padding:10px 18px;font-size:14px;font-weight:600;font-family:var(--pic-font);cursor:pointer;transition:background .12s;}
+.pic-board .btn-secondary:hover{background:var(--pic-bg);}
 
 /* kpis */
 .pic-board .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px;}
@@ -93,6 +95,14 @@
 /* slide-over */
 .pic-board .overlay{position:fixed;inset:0;background:rgba(17,24,39,.4);display:none;justify-content:flex-end;z-index:50;}
 .pic-board .overlay.open{display:flex;}
+.pic-board .overlay.overlay-center{justify-content:center;align-items:center;padding:20px;}
+.pic-board .mini-modal{width:420px;max-width:100%;background:var(--pic-surface);border-radius:18px;box-shadow:0 20px 48px rgba(19,24,19,.18);overflow:hidden;}
+.pic-board .mini-modal-header{padding:18px 22px;border-bottom:1px solid var(--pic-line);display:flex;justify-content:space-between;align-items:center;}
+.pic-board .mini-modal-header h2{font-size:16px;font-weight:700;margin:0;}
+.pic-board .mini-modal-header button{background:none;border:none;color:var(--pic-ink-soft);cursor:pointer;border-radius:8px;padding:4px;}
+.pic-board .mini-modal-header button:hover{background:var(--pic-line);}
+.pic-board .mini-modal-body{padding:18px 22px;}
+.pic-board .mini-modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px 20px;border-top:1px solid var(--pic-line);}
 .pic-board .drawer{width:560px;max-width:100%;background:var(--pic-bg);height:100%;overflow-y:auto;box-shadow:-12px 0 32px rgba(19,24,19,.12);}
 .pic-board .drawer-header{padding:20px 24px;border-bottom:1px solid var(--pic-line);display:flex;justify-content:space-between;align-items:center;background:var(--pic-surface);position:sticky;top:0;z-index:2;}
 .pic-board .drawer-header h2{font-size:17px;font-weight:700;margin:0;}

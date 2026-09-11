@@ -199,6 +199,9 @@
                                                 <div class="detail-item"><span>N° costal</span><span>{{ $r->costal ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Ubicación</span><span>{{ $r->ubicacion ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Observación</span><span>{{ $r->observacion ?: '—' }}</span></div>
+                                                @if ($r->remision_envio_trilla)
+                                                    <div class="detail-item"><span>Remisión envío a trilla</span><span>{{ $r->remision_envio_trilla }}</span></div>
+                                                @endif
                                                 <div class="detail-item"><span>Almendra sana</span><span>{{ $r->as_env ? $r->as_env.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Pasilla</span><span>{{ $r->pas_env ? $r->pas_env.'%' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Primer grupo</span><span>{{ $r->pg_env ? $r->pg_env.'%' : '—' }}</span></div>

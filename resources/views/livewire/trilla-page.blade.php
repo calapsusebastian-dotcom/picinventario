@@ -111,6 +111,9 @@
                                                 <div class="detail-item"><span>N° costal</span><span>{{ $r->costal ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Ubicación</span><span>{{ $r->ubicacion ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Observación</span><span>{{ $r->observacion ?: '—' }}</span></div>
+                                                @if ($r->remision_envio_trilla)
+                                                    <div class="detail-item"><span>Remisión envío a trilla</span><span>{{ $r->remision_envio_trilla }}</span></div>
+                                                @endif
                                             </div>
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío · {{ $r->analisis_enviado_por ?: '—' }}</span></div>
