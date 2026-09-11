@@ -146,7 +146,7 @@ new class extends Component
         </nav>
 
         <div class="border-t border-gray-100 dark:border-gray-700 p-3">
-            <x-dropdown align="left" width="56">
+            <x-dropdown align="left" width="56" :up="true">
                 <x-slot name="trigger">
                     <button class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition ease-in-out duration-150" x-bind:class="{ 'justify-center px-2': collapsed }">
                         <div class="flex-1 text-start truncate" x-show="!collapsed" x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
