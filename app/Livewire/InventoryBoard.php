@@ -247,9 +247,11 @@ class InventoryBoard extends Component
                 COALESCE(SUM(ir.kg_enviados), 0) as kg_enviados,
                 COALESCE(SUM(ir.kg_recibidos), 0) as kg_recibidos_total,
                 COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
-                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 0)), 0) as kg_en_bodega,
+                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 0 AND ir.enviado_a_bodega_almacafe = 0)), 0) as kg_en_bodega,
                 COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
                     * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 1)), 0) as kg_en_bodega_especial,
+                COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
+                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 0 AND ir.enviado_a_bodega_almacafe = 1)), 0) as kg_en_bodega_almacafe,
                 COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
                     * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 1)), 0) as kg_en_trilla,
                 COALESCE(SUM((ir.remision_despacho IS NOT NULL) * COALESCE(ir.kg_recibidos, 0)), 0) as kg_despachado_directo,
@@ -266,14 +268,16 @@ class InventoryBoard extends Component
 
         $kgEnBodega = (float) $rows->kg_en_bodega;
         $kgEnBodegaEspecial = (float) $rows->kg_en_bodega_especial;
+        $kgEnBodegaAlmacafe = (float) $rows->kg_en_bodega_almacafe;
         $kgEnTrilla = (float) $rows->kg_en_trilla;
 
         return [
             'registros' => (int) $rows->registros,
             'kg_enviados' => (float) $rows->kg_enviados,
-            'kg_recibidos' => $kgEnBodega + $kgEnBodegaEspecial + $kgEnTrilla,
+            'kg_recibidos' => $kgEnBodega + $kgEnBodegaEspecial + $kgEnBodegaAlmacafe + $kgEnTrilla,
             'kg_en_bodega' => $kgEnBodega,
             'kg_en_bodega_especial' => $kgEnBodegaEspecial,
+            'kg_en_bodega_almacafe' => $kgEnBodegaAlmacafe,
             'kg_en_trilla' => $kgEnTrilla,
             'kg_en_despacho' => $kgProductoPendiente + (float) $rows->kg_pendiente_despacho_directo,
             'existencia' => max(0, (float) $rows->kg_recibidos_total - $kgDespachadoProductos - (float) $rows->kg_despachado_directo),

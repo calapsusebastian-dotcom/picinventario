@@ -21,8 +21,8 @@
             <div class="brand">
                 <div class="brand-mark">PIC</div>
                 <div>
-                    <h1>Bodega · Bodega PIC</h1>
-                    <p class="subtitle">Todas las remisiones que entraron a bodega — elige cuáles pasan al módulo de Trilla</p>
+                    <h1>Bodega Almacafe · Bodega PIC</h1>
+                    <p class="subtitle">Remisiones movidas desde Bodega a la bodega Almacafe — elige cuáles pasan a Trilla o Despacho</p>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12l8.73-5.04"/><path d="M12 22.08V12"/></svg>
                 </div>
                 <div>
-                    <div class="kpi-label">Saldo en bodega</div>
+                    <div class="kpi-label">Saldo en bodega Almacafe</div>
                     <div class="kpi-value">{{ number_format($totales['saldo'], 2, ',', '.') }} <small>kg</small></div>
                 </div>
             </div>
@@ -62,26 +62,16 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Buscar por remisión, calidad o cliente...">
             </div>
-            <select wire:model.live="filterUbicacion">
-                <option value="Todos">Todas las ubicaciones</option>
-                <option value="En bodega">En bodega</option>
-                <option value="En bodega especial">En bodega especial</option>
-                <option value="En bodega almacafe">En bodega almacafe</option>
-                <option value="En trilla">En trilla</option>
-                <option value="En despacho">En despacho</option>
-                <option value="Trillado">Trillado</option>
-                <option value="Despachado">Despachado</option>
-            </select>
         </div>
 
-        <div class="section-label">Movimientos de bodega ({{ $movimientos->total() }})</div>
+        <div class="section-label">Movimientos de bodega Almacafe ({{ $movimientos->total() }})</div>
 
         <div class="table-card">
             <div class="table-scroll">
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Ubicación</th>
+                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Trilla</th><th>Despacho</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,7 +82,7 @@
                             @endphp
                             <tr class="data-row" wire:key="mov-{{ $r->id }}" wire:click="toggleExpand({{ $r->id }})">
                                 <td class="checkbox-cell" @click.stop="null">
-                                    @if ($mov['saldo'] > 0.001 && ! $r->enviado_a_trilla && ! $r->enviado_a_despacho && ! $r->enviado_a_bodega_especial && ! $r->enviado_a_bodega_almacafe)
+                                    @if ($mov['saldo'] > 0.001 && ! $r->enviado_a_trilla && ! $r->enviado_a_despacho)
                                         <input type="checkbox" wire:model.live="selected" value="{{ $r->id }}">
                                     @endif
                                 </td>
@@ -105,27 +95,29 @@
                                 <td class="mono num" style="font-weight:700;">{{ number_format($mov['saldo'], 2, ',', '.') }}</td>
                                 <td><span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ $r->estatus }}</span></td>
                                 <td>
-                                    @if ($r->isDespachadoDirecto())
-                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachado</span>
-                                    @elseif ($r->enviado_a_despacho)
-                                        <span class="badge" style="background:#E1EFFB;color:#1D5FA8;">En despacho</span>
-                                    @elseif ($mov['saldo'] <= 0.001 && $r->trillas->isNotEmpty())
-                                        <span class="badge" style="background:var(--pic-accent-soft);color:var(--pic-accent-deep)">Trillado</span>
-                                    @elseif ($r->enviado_a_trilla)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En trilla</span>
-                                    @elseif ($r->enviado_a_bodega_especial)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En bodega especial</span>
-                                    @elseif ($r->enviado_a_bodega_almacafe)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En bodega almacafe</span>
+                                    @if ($r->enviado_a_trilla)
+                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Enviada</span>
                                     @else
-                                        <span class="badge" style="background:var(--pic-amber-soft);color:var(--pic-amber)">En bodega</span>
+                                        <span class="badge" style="background:var(--pic-line);color:var(--pic-ink-soft);">Pendiente</span>
                                     @endif
+                                </td>
+                                <td>
+                                    @if ($r->enviado_a_despacho)
+                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Enviada</span>
+                                    @else
+                                        <span class="badge" style="background:var(--pic-line);color:var(--pic-ink-soft);">Pendiente</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <button type="button" class="icon-btn danger" title="Reversar a bodega" wire:click.stop="reversarABodega({{ $r->id }})">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                    </button>
                                 </td>
                             </tr>
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="10">
+                                    <td colspan="12">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">General</span></div>
@@ -149,7 +141,7 @@
                                                 <div class="detail-item"><span>Humedad</span><span>{{ $r->humedad_rec ? $r->humedad_rec.'%' : '—' }}</span></div>
                                             </div>
                                             <div class="detail-block">
-                                                <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-accent)"></span><span class="detail-title">Bodega (saldo)</span></div>
+                                                <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-accent)"></span><span class="detail-title">Bodega Almacafe (saldo)</span></div>
                                                 <div class="detail-item"><span>Kg recibidos</span><span>{{ number_format($mov['kg_recibido'], 2, ',', '.') }} kg</span></div>
                                                 <div class="detail-item"><span>Kg enviados a trilla</span><span>{{ number_format($mov['kg_usado_trilla'], 2, ',', '.') }} kg</span></div>
                                                 <div class="detail-item" style="border-top:1px solid var(--pic-line);margin-top:6px;padding-top:8px;"><span style="font-weight:700;">Saldo</span><span style="font-weight:700;">{{ number_format($mov['saldo'], 2, ',', '.') }} kg</span></div>
@@ -167,7 +159,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="10">No hay remisiones que coincidan con la búsqueda.</td></tr>
+                            <tr class="empty-row"><td colspan="12">No hay remisiones en la bodega Almacafe.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -185,14 +177,6 @@
                 <button type="button" class="btn-primary" style="background:var(--pic-accent-deep);" wire:click="enviarADespacho">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                     Enviar a despacho
-                </button>
-                <button type="button" class="btn-primary" style="background:var(--pic-purple);" wire:click="enviarABodegaEspecial">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V10l9-6 9 6v11"/><path d="M9 21v-7h6v7"/><path d="M3 10h18"/></svg>
-                    Enviar a bodega especiales
-                </button>
-                <button type="button" class="btn-primary" style="background:#0B6B54;" wire:click="enviarABodegaAlmacafe">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V11l9-6 9 6v10"/><path d="M3 10h18"/><ellipse cx="12" cy="16" rx="3" ry="4"/><path d="M12 12v8"/></svg>
-                    Enviar a bodega almacafe
                 </button>
             </div>
         @endif

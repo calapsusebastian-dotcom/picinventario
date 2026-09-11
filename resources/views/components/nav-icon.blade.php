@@ -17,6 +17,7 @@ $paths = [
     'stock' => '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
     'bodega' => '<path d="M3 21V10l9-6 9 6v11"/><path d="M9 21v-7h6v7"/><path d="M3 10h18"/>',
     'bodega-especial' => '<path d="M3 21V11l9-6 9 6v10"/><path d="M3 10h18"/><path d="M12 12.5l1.3 2.7 3 .4-2.15 2.1.5 3-2.65-1.4-2.65 1.4.5-3-2.15-2.1 3-.4z"/>',
+    'bodega-almacafe' => '<path d="M3 21V11l9-6 9 6v10"/><path d="M3 10h18"/><ellipse cx="12" cy="16" rx="3" ry="4"/><path d="M12 12v8"/>',
     'ubicaciones' => '<path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
     'contra-entrega' => '<path d="M12 3v18"/><path d="M5 8l-3 6a4 4 0 008 0l-3-6"/><path d="M19 8l-3 6a4 4 0 008 0l-3-6"/><path d="M5 8h14"/>',
 ];

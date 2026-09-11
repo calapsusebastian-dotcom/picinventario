@@ -88,6 +88,21 @@ class BodegaPage extends Component
         $this->selected = [];
     }
 
+    /**
+     * Release the selected remisiones into Bodega Almacafe — another
+     * separate holding area, same idea as Bodega Especiales.
+     */
+    public function enviarABodegaAlmacafe(): void
+    {
+        if (empty($this->selected)) {
+            return;
+        }
+
+        InventoryRecord::whereIn('id', $this->selected)->update(['enviado_a_bodega_almacafe' => true]);
+
+        $this->selected = [];
+    }
+
     /** SQL expression for kg still available (recibidos − usado en trillas), clamped at 0. */
     private const DISP_EXPR = 'GREATEST(COALESCE(inventory_records.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)';
 
@@ -134,9 +149,14 @@ class BodegaPage extends Component
             ->when($this->filterUbicacion === 'En bodega especial', fn (Builder $q) => $q
                 ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
                 ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)->where('enviado_a_bodega_especial', true))
+            ->when($this->filterUbicacion === 'En bodega almacafe', fn (Builder $q) => $q
+                ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
+                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)
+                ->where('enviado_a_bodega_especial', false)->where('enviado_a_bodega_almacafe', true))
             ->when($this->filterUbicacion === 'En bodega', fn (Builder $q) => $q
                 ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
-                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)->where('enviado_a_bodega_especial', false))
+                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)
+                ->where('enviado_a_bodega_especial', false)->where('enviado_a_bodega_almacafe', false))
             ->orderByDesc('fecha')
             ->orderByDesc('id');
     }
