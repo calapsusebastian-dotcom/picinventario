@@ -156,6 +156,39 @@ class ContraEntregaTools
     }
 
     #[McpTool(
+        name: 'contra_entrega_por_ubicacion',
+        description: 'Informe de contra entrega agrupado por ubicación: cantidad de remisiones, kg enviados, kg recibidos, diferencia total y % de diferencia promedio de cada ubicación. Ordenado de mayor a menor diferencia absoluta, así que el primer resultado es la ubicación con la diferencia más grande (positiva o negativa). Opcionalmente filtra por rango de fechas (YYYY-MM-DD).'
+    )]
+    public function contraEntregaPorUbicacion(?string $fechaDesde = null, ?string $fechaHasta = null): array
+    {
+        $registros = $this->baseQuery()
+            ->when($fechaDesde, fn (Builder $q) => $q->whereDate('fecha', '>=', $fechaDesde))
+            ->when($fechaHasta, fn (Builder $q) => $q->whereDate('fecha', '<=', $fechaHasta))
+            ->get();
+
+        $porUbicacion = $registros
+            ->groupBy(fn (InventoryRecord $r) => $r->ubicacion ?: 'Sin ubicación')
+            ->map(function ($grupo, $ubicacion) {
+                $kgEnviados = (float) $grupo->sum('kg_enviados');
+                $kgRecibidos = (float) $grupo->sum('kg_recibidos');
+                $diff = $kgRecibidos - $kgEnviados;
+
+                return [
+                    'ubicacion' => $ubicacion,
+                    'remisiones' => $grupo->count(),
+                    'kg_enviados' => $kgEnviados,
+                    'kg_recibidos' => $kgRecibidos,
+                    'diferencia_kg' => round($diff, 2),
+                    'diferencia_pct' => $kgEnviados > 0 ? round($diff / $kgEnviados * 100, 2) : null,
+                ];
+            })
+            ->sortByDesc(fn (array $fila) => abs($fila['diferencia_kg']))
+            ->values();
+
+        return ['ubicaciones' => $porUbicacion->all()];
+    }
+
+    #[McpTool(
         name: 'contra_entrega_por_mes',
         description: 'Informe de contra entrega agrupado por mes (según la fecha de la remisión): remisiones, kg enviados, kg recibidos, diferencia total y % de diferencia promedio de cada mes. Útil para ver la tendencia de mermas en el tiempo.'
     )]
