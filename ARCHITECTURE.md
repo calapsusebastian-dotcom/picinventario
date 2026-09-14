@@ -67,7 +67,28 @@ El acceso se controla por el array `roles` de cada usuario (`App\Models\User`):
 
 Un usuario no-admin solo ve en el menú lateral las secciones para las que tiene rol asignado.
 
-## 3. Arquitectura técnica
+## 3. Acciones operativas
+
+### Crear una remisión nueva
+
+Solo un admin puede crear una remisión (botón "Nuevo registro" en el Tablero). Se llena por secciones — **General** primero y es obligatoria; el formulario no deja avanzar a Envío/Recepción/Destino/Imov hasta que General esté completa, pero esas 4 sí se pueden llenar en cualquier orden entre sí.
+
+### Enviar remisiones desde una bodega
+
+Al seleccionar una o más remisiones en Bodega, Bodega Especiales o Bodega Almacafe y darle "Enviar a trilla", el sistema pide primero el **número de remisión del envío físico** (el documento que acompaña el camión hacia la trilladora) antes de confirmar — es un dato aparte del número de remisión original de cada registro, y se guarda en `remision_envio_trilla`.
+
+### Revertir acciones
+
+- **Bodega Especiales / Bodega Almacafe → Bodega**: "Reversar a bodega" quita el flag correspondiente y la remisión vuelve a aparecer en Bodega normal.
+- **Despacho pendiente → Bodega**: una remisión enviada directo a despacho pero sin remisión de despacho asignada todavía se puede reversar y vuelve a quedar disponible en Bodega.
+- **Deshacer un despacho ya hecho**: tanto para un producto de trilla despachado como para materia prima despachada directo, se puede "revertir" — limpia la remisión de despacho, destino y factura, y el registro vuelve a la cola de pendientes de despacho.
+
+### Gestión de catálogos (solo admin)
+
+- **Usuarios y roles** (`/usuarios`): crear/editar/eliminar usuarios y asignarles uno o más roles (`admin`, `general`, `envio`, `recepcion`, `destino`, `imov`, `trilla`, `despacho`). Un admin no puede quitarse a sí mismo el rol de admin ni eliminar su propia cuenta.
+- **Productos, Clientes, Ubicaciones**: catálogos simples (solo un nombre), con creación/edición/eliminación — alimentan los menús desplegables del resto del sistema.
+
+## 4. Arquitectura técnica
 
 - **Backend**: Laravel 13, cada módulo (Tablero, Bodega, Trilla, Despacho, etc.) es un componente Livewire 3 independiente con su propia clase en `app/Livewire/`.
 - **Frontend**: Blade + el sistema de diseño compartido en `resources/css/inventory-board.css` (clase raíz `.pic-board`), sin build de JS aparte de Vite para compilar CSS.
@@ -75,7 +96,7 @@ Un usuario no-admin solo ve en el menú lateral las secciones para las que tiene
 - **Listados grandes**: cada página de tabla pushea sus filtros a SQL (`filteredQuery()` + `paginate()`), en vez de cargar todo a memoria — patrón repetido en Tablero, Bodega, Bodega Especial/Almacafe y Contra Entrega.
 - **Exportes**: PDF del Tablero (formato corporativo, vía `barryvdh/laravel-dompdf`) y CSV de Contra Entrega.
 
-## 4. Mapa de páginas
+## 5. Mapa de páginas
 
 | Ruta | Página | Acceso |
 |---|---|---|
@@ -91,7 +112,7 @@ Un usuario no-admin solo ve en el menú lateral las secciones para las que tiene
 | `/informes` | Informes (totales, por mes, por cliente, por producto) | admin |
 | `/usuarios`, `/productos`, `/clientes`, `/ubicaciones` | Catálogos y administración | admin |
 
-## 5. Servidor MCP
+## 6. Servidor MCP
 
 Bodega PIC expone sus datos vía un servidor MCP remoto (`POST /mcp`, protegido por token — `App\Http\Middleware\EnsureMcpToken`) para que un asistente de IA pueda consultar el inventario en lenguaje natural. **Todas las herramientas son de solo lectura** — ninguna modifica datos.
 
@@ -110,7 +131,7 @@ Bodega PIC expone sus datos vía un servidor MCP remoto (`POST /mcp`, protegido 
 
 Configuración clave en `.env` (producción): `MCP_AUTH_TOKEN`, `MCP_SESSION_DRIVER=file`, `MCP_HTTP_INTEGRATED_STATELESS=true` (necesario en hosting compartido — evita que conexiones largas agoten los procesos PHP disponibles).
 
-## 6. Despliegue
+## 7. Despliegue
 
 Producción corre en Hostinger (`pedidoscoocentral.online`) sobre el mismo repo de GitHub (`calapsusebastian-dotcom/picinventario`, rama `main`). Flujo típico:
 
