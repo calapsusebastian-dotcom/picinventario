@@ -15,7 +15,7 @@ class InventoryRecordForm extends Form
     public const STAGE_FIELDS = [
         'general' => ['anio', 'mes', 'fecha', 'remision', 'tulas', 'costal'],
         'envio' => [
-            'calidad_enviada', 'kg_enviados', 'analisis_enviado_por',
+            'calidad_enviada', 'kg_enviados',
             'as_env', 'pas_env', 'pg_env', 'broca_env', 'humedad_env', 'factor_env',
         ],
         'recepcion' => [
@@ -39,7 +39,6 @@ class InventoryRecordForm extends Form
     // Envio
     public ?string $calidad_enviada = '';
     public ?string $kg_enviados = '';
-    public ?string $analisis_enviado_por = 'Jorge';
     public ?string $as_env = '';
     public ?string $pas_env = '';
     public ?string $pg_env = '';
@@ -83,7 +82,6 @@ class InventoryRecordForm extends Form
 
             'calidad_enviada' => ['nullable', 'string', 'max:255'],
             'kg_enviados' => ['nullable', 'numeric'],
-            'analisis_enviado_por' => ['nullable', 'string', 'max:255'],
             'as_env' => ['nullable', 'numeric', 'max:300'],
             'pas_env' => ['nullable', 'numeric', 'max:300'],
             'pg_env' => ['nullable', 'numeric', 'max:300'],
@@ -150,7 +148,7 @@ class InventoryRecordForm extends Form
             'anio' => 'año', 'mes' => 'mes', 'fecha' => 'fecha', 'remision' => 'remisión',
             'tulas' => 'N° tulas', 'costal' => 'N° costal', 'ubicacion' => 'ubicación', 'observacion' => 'observación',
 
-            'calidad_enviada' => 'calidad enviada', 'kg_enviados' => 'kg enviados', 'analisis_enviado_por' => 'análisis enviado por',
+            'calidad_enviada' => 'calidad enviada', 'kg_enviados' => 'kg enviados',
             'as_env' => 'almendra sana', 'pas_env' => 'pasilla', 'pg_env' => 'primer grupo', 'broca_env' => 'broca',
             'humedad_env' => 'humedad', 'factor_env' => 'factor',
 
@@ -178,7 +176,6 @@ class InventoryRecordForm extends Form
 
         $this->calidad_enviada = $record->calidad_enviada;
         $this->kg_enviados = (string) $record->kg_enviados;
-        $this->analisis_enviado_por = $record->analisis_enviado_por;
         $this->as_env = (string) $record->as_env;
         $this->pas_env = (string) $record->pas_env;
         $this->pg_env = (string) $record->pg_env;

@@ -130,7 +130,7 @@
                                                 <div class="detail-item"><span>Observación</span><span>{{ $r->observacion ?: '—' }}</span></div>
                                             </div>
                                             <div class="detail-block">
-                                                <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío · {{ $r->analisis_enviado_por ?: '—' }}</span></div>
+                                                <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío</span></div>
                                                 <div class="detail-item"><span>Calidad enviada</span><span>{{ $r->calidad_enviada ?: '—' }}</span></div>
                                                 <div class="detail-item"><span>Kg enviados</span><span>{{ $r->kg_enviados ? $r->kg_enviados.' kg' : '—' }}</span></div>
                                                 <div class="detail-item"><span>Factor</span><span>{{ $r->factor_env ?: '—' }}</span></div>

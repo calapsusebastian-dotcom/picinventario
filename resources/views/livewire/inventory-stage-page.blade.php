@@ -123,7 +123,7 @@
 
                         @if (in_array($stage, ['recepcion', 'destino', 'imov']))
                             <div class="detail-block">
-                                <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío · {{ $form->analisis_enviado_por ?: '—' }}</span></div>
+                                <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío</span></div>
                                 <div class="detail-item"><span>Calidad enviada</span><span>{{ $form->calidad_enviada ?: '—' }}</span></div>
                                 <div class="detail-item"><span>Kg enviados</span><span>{{ $form->kg_enviados ? $form->kg_enviados.' kg' : '—' }}</span></div>
                                 <div class="detail-item"><span>Almendra sana</span><span>{{ $form->as_env ? $form->as_env.'%' : '—' }}</span></div>
@@ -211,11 +211,6 @@
                             @error('form.calidad_enviada') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
                         </div>
                         <div class="field"><label>Kg enviados</label><input type="number" wire:model="form.kg_enviados">@error('form.kg_enviados') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
-                        <div class="field"><label>Análisis enviado por</label>
-                            <select wire:model="form.analisis_enviado_por"><option value="">Selecciona...</option><option>Jorge</option><option>Evelyn</option><option>Natalia</option></select>
-                            @error('form.analisis_enviado_por') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror
-                        </div>
-                        <div></div>
                         <div class="field"><label>Almendra sana <small>(%)</small></label><input type="number" wire:model="form.as_env">@error('form.as_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Pasilla <small>(%)</small></label><input type="number" wire:model="form.pas_env">@error('form.pas_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
                         <div class="field"><label>Primer grupo <small>(%)</small></label><input type="number" wire:model="form.pg_env">@error('form.pg_env') <small style="color:var(--pic-danger);">{{ $message }}</small> @enderror</div>
