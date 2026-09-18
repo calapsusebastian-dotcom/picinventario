@@ -115,7 +115,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Kg env.</th><th>Kg rec.</th><th class="num">Factor rec.</th><th>Ubicación</th><th>Cliente</th><th>Imov</th><th>Estatus</th><th>Progreso</th><th></th>
+                            <th>Fecha</th><th>Remisión</th><th>Ubicación</th><th>Calidad</th><th>Kg env.</th><th>Kg rec.</th><th class="num">Factor rec.</th><th>Etapa</th><th>Cliente</th><th>Imov</th><th>Estatus</th><th>Progreso</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -133,6 +133,7 @@
                                         <span class="batch-pill" title="Lote de trilla #{{ $t->id }} · usó {{ number_format((float) $t->pivot->kg_usado, 2, ',', '.') }} kg de esta remisión">Trilla #{{ $t->id }}</span>
                                     @endforeach
                                 </td>
+                                <td>{{ $r->ubicacion ?: '—' }}</td>
                                 <td>{{ $r->calidad_enviada ?: '—' }}</td>
                                 <td class="mono num">{{ $r->kg_enviados ?: '0' }}</td>
                                 <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
@@ -184,7 +185,7 @@
 
                             @if ($confirmDeleteId === $r->id)
                                 <tr class="confirm-row">
-                                    <td colspan="12">
+                                    <td colspan="13">
                                         ¿Eliminar el registro {{ $r->remision ?: 'sin remisión' }}? Esta acción no se puede deshacer.
                                         <button type="button" class="btn-del-confirm" wire:click.stop="delete({{ $r->id }})">Eliminar</button>
                                         <button type="button" class="btn-del-cancel" wire:click.stop="cancelDelete">Cancelar</button>
@@ -194,7 +195,7 @@
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="12">
+                                    <td colspan="13">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-purple)"></span><span class="detail-title">Envío · {{ $r->analisis_enviado_por ?: '—' }}</span></div>
@@ -251,13 +252,13 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="12">No hay registros que coincidan con los filtros.</td></tr>
+                            <tr class="empty-row"><td colspan="13">No hay registros que coincidan con los filtros.</td></tr>
                         @endforelse
                     </tbody>
                     @if ($filaTotales['count'] > 0)
                         <tfoot>
                             <tr class="totales-row">
-                                <td colspan="3">Totales ({{ $filaTotales['count'] }} registro{{ $filaTotales['count'] === 1 ? '' : 's' }})</td>
+                                <td colspan="4">Totales ({{ $filaTotales['count'] }} registro{{ $filaTotales['count'] === 1 ? '' : 's' }})</td>
                                 <td class="mono num">{{ number_format($filaTotales['kg_enviados'], 2, ',', '.') }}</td>
                                 <td class="mono num">{{ number_format($filaTotales['kg_recibidos'], 2, ',', '.') }}</td>
                                 <td class="mono num">{{ number_format($filaTotales['factor_rec_ponderado'], 2, ',', '.') }}</td>
