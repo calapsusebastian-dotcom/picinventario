@@ -20,8 +20,9 @@
         ['label' => 'Registros', 'value' => $summary['registros'], 'unit' => '', 'icon' => 'clipboard', 'color' => 'accent'],
         ['label' => 'Kg enviados', 'value' => $fmt($summary['kg_enviados']), 'unit' => 'kg', 'icon' => 'send', 'color' => 'purple'],
         ['label' => 'Kg en bodega', 'value' => $fmt($summary['kg_en_bodega']), 'unit' => 'kg', 'icon' => 'inbox', 'color' => 'amber'],
-        ['label' => 'Kg en bodega especial', 'value' => $fmt($summary['kg_en_bodega_especial']), 'unit' => 'kg', 'icon' => 'star', 'color' => 'purple'],
-        ['label' => 'Kg en bodega almacafe', 'value' => $fmt($summary['kg_en_bodega_almacafe']), 'unit' => 'kg', 'icon' => 'bean', 'color' => 'amber'],
+        ...collect($summary['bodegas'])->map(fn ($b) => [
+            'label' => 'Kg en '.$b['nombre'], 'value' => $fmt($b['kg']), 'unit' => 'kg', 'icon' => 'star', 'color' => 'purple',
+        ])->all(),
         ['label' => 'Kg en trilla', 'value' => $fmt($summary['kg_en_trilla']), 'unit' => 'kg', 'icon' => 'clock', 'color' => 'purple'],
         ['label' => 'Kg en despacho (por despachar)', 'value' => $fmt($summary['kg_en_despacho']), 'unit' => 'kg', 'icon' => 'truck', 'color' => 'accent'],
         ['label' => 'Existencia en bodegas', 'value' => $fmt($summary['existencia']), 'unit' => 'kg', 'icon' => 'box', 'color' => 'accent'],
@@ -139,25 +140,11 @@
                                 <td class="mono num">{{ $r->kg_recibidos ?: '0' }}</td>
                                 <td class="mono num">{{ $r->factor_rec ?: '—' }}</td>
                                 <td>
-                                    @php $saldo = $r->kgDisponible(); @endphp
-                                    @if ($r->isDespachadoDirecto())
-                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachado</span>
-                                    @elseif ($r->enviado_a_despacho)
-                                        <span class="badge" style="background:#E1EFFB;color:#1D5FA8;">En despacho</span>
-                                    @elseif ($saldo === null || $saldo <= 0.001)
-                                        @if ($r->trillas->isNotEmpty())
-                                            <span class="badge" style="background:var(--pic-accent-soft);color:var(--pic-accent-deep)">Trillado</span>
-                                        @else
-                                            —
-                                        @endif
-                                    @elseif ($r->enviado_a_trilla)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En trilla</span>
-                                    @elseif ($r->enviado_a_bodega_especial)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En bodega especial</span>
-                                    @elseif ($r->enviado_a_bodega_almacafe)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En bodega almacafe</span>
+                                    @php $badge = $r->ubicacionBadge(); @endphp
+                                    @if ($badge['bg'])
+                                        <span class="badge" style="background:{{ $badge['bg'] }};color:{{ $badge['fg'] }}">{{ $badge['label'] }}</span>
                                     @else
-                                        <span class="badge" style="background:var(--pic-amber-soft);color:var(--pic-amber)">En bodega</span>
+                                        {{ $badge['label'] }}
                                     @endif
                                 </td>
                                 <td>{{ $r->cliente ?: '—' }}</td>

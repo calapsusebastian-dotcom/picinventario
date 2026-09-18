@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Bodega;
 use App\Models\InventoryRecord;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -111,32 +112,24 @@ class BodegaPage extends Component
     }
 
     /**
-     * Release the selected remisiones into Bodega Especiales — a separate
-     * holding area. From there they get routed onward to Trilla or
-     * Despacho just like from this Bodega.
+     * Release the selected remisiones into an intermediate bodega (Bodega
+     * Especiales, Bodega Almacafe, or any bodega created afterward). From
+     * there they get routed onward to Trilla or Despacho just like from
+     * this Bodega.
      */
-    public function enviarABodegaEspecial(): void
+    public function enviarABodega(int $bodegaId): void
     {
         if (empty($this->selected)) {
             return;
         }
 
-        InventoryRecord::whereIn('id', $this->selected)->update(['enviado_a_bodega_especial' => true]);
+        $bodega = Bodega::where('id', $bodegaId)->where('activo', true)->first();
 
-        $this->selected = [];
-    }
-
-    /**
-     * Release the selected remisiones into Bodega Almacafe — another
-     * separate holding area, same idea as Bodega Especiales.
-     */
-    public function enviarABodegaAlmacafe(): void
-    {
-        if (empty($this->selected)) {
+        if (! $bodega) {
             return;
         }
 
-        InventoryRecord::whereIn('id', $this->selected)->update(['enviado_a_bodega_almacafe' => true]);
+        InventoryRecord::whereIn('id', $this->selected)->update(['bodega_actual_id' => $bodega->id]);
 
         $this->selected = [];
     }
@@ -184,17 +177,13 @@ class BodegaPage extends Component
             ->when($this->filterUbicacion === 'En trilla', fn (Builder $q) => $q
                 ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
                 ->whereRaw("NOT $trillado")->where('enviado_a_trilla', true))
-            ->when($this->filterUbicacion === 'En bodega especial', fn (Builder $q) => $q
-                ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
-                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)->where('enviado_a_bodega_especial', true))
-            ->when($this->filterUbicacion === 'En bodega almacafe', fn (Builder $q) => $q
-                ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
-                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)
-                ->where('enviado_a_bodega_especial', false)->where('enviado_a_bodega_almacafe', true))
             ->when($this->filterUbicacion === 'En bodega', fn (Builder $q) => $q
                 ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
+                ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)->whereNull('bodega_actual_id'))
+            ->when(str_starts_with($this->filterUbicacion, 'bodega:'), fn (Builder $q) => $q
+                ->whereNull('remision_despacho')->where('enviado_a_despacho', false)
                 ->whereRaw("NOT $trillado")->where('enviado_a_trilla', false)
-                ->where('enviado_a_bodega_especial', false)->where('enviado_a_bodega_almacafe', false))
+                ->where('bodega_actual_id', (int) substr($this->filterUbicacion, 7)))
             ->orderByDesc('fecha')
             ->orderByDesc('id');
     }
@@ -216,6 +205,7 @@ class BodegaPage extends Component
         return view('livewire.bodega-page', [
             'movimientos' => $movimientos,
             'totales' => $this->globalTotales(),
+            'bodegas' => Bodega::where('activo', true)->orderBy('nombre')->get(),
         ]);
     }
 
@@ -252,8 +242,7 @@ class BodegaPage extends Component
                 COALESCE(SUM(CASE WHEN inventory_records.remision_despacho IS NULL
                     AND inventory_records.enviado_a_despacho = 0
                     AND inventory_records.enviado_a_trilla = 0
-                    AND inventory_records.enviado_a_bodega_especial = 0
-                    AND inventory_records.enviado_a_bodega_almacafe = 0
+                    AND inventory_records.bodega_actual_id IS NULL
                     THEN '.self::DISP_EXPR.' ELSE 0 END), 0) as saldo
             ')
             ->first();

@@ -33,11 +33,9 @@ class InventorySummary
                 COALESCE(SUM(ir.kg_enviados), 0) as kg_enviados,
                 COALESCE(SUM(ir.kg_recibidos), 0) as kg_recibidos_total,
                 COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
-                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 0 AND ir.enviado_a_bodega_almacafe = 0)), 0) as kg_en_bodega,
+                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.bodega_actual_id IS NULL)), 0) as kg_en_bodega,
                 COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
-                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 1)), 0) as kg_en_bodega_especial,
-                COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
-                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.enviado_a_bodega_especial = 0 AND ir.enviado_a_bodega_almacafe = 1)), 0) as kg_en_bodega_almacafe,
+                    * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 0 AND ir.bodega_actual_id IS NOT NULL)), 0) as kg_en_bodegas_intermedias,
                 COALESCE(SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)
                     * (ir.enviado_a_despacho = 0 AND ir.enviado_a_trilla = 1)), 0) as kg_en_trilla,
                 COALESCE(SUM((ir.remision_despacho IS NOT NULL) * COALESCE(ir.kg_recibidos, 0)), 0) as kg_despachado_directo,
@@ -49,21 +47,45 @@ class InventorySummary
             ')
             ->first();
 
+        // Same "disponible" measure, broken down per active bodega — this is
+        // what replaces the old fixed kg_en_bodega_especial/almacafe pair,
+        // so it scales to however many bodegas exist.
+        $porBodega = DB::table('inventory_records as ir')
+            ->leftJoinSub(
+                DB::table('trilla_inventory_record')
+                    ->select('inventory_record_id')
+                    ->selectRaw('SUM(kg_usado) as usado')
+                    ->groupBy('inventory_record_id'),
+                'piv',
+                'piv.inventory_record_id',
+                '=',
+                'ir.id'
+            )
+            ->join('bodegas', 'bodegas.id', '=', 'ir.bodega_actual_id')
+            ->where('ir.enviado_a_despacho', false)
+            ->where('ir.enviado_a_trilla', false)
+            ->groupBy('bodegas.id', 'bodegas.nombre')
+            ->orderBy('bodegas.nombre')
+            ->selectRaw('bodegas.id, bodegas.nombre, SUM(GREATEST(COALESCE(ir.kg_recibidos, 0) - COALESCE(piv.usado, 0), 0)) as kg')
+            ->get();
+
         $kgDespachadoProductos = (float) TrillaProducto::whereNotNull('remision_despacho')->sum('kg');
         $kgProductoPendiente = (float) TrillaProducto::whereNull('remision_despacho')->sum('kg');
 
         $kgEnBodega = (float) $rows->kg_en_bodega;
-        $kgEnBodegaEspecial = (float) $rows->kg_en_bodega_especial;
-        $kgEnBodegaAlmacafe = (float) $rows->kg_en_bodega_almacafe;
+        $kgEnBodegasIntermedias = (float) $rows->kg_en_bodegas_intermedias;
         $kgEnTrilla = (float) $rows->kg_en_trilla;
 
         return [
             'registros' => (int) $rows->registros,
             'kg_enviados' => (float) $rows->kg_enviados,
-            'kg_recibidos' => $kgEnBodega + $kgEnBodegaEspecial + $kgEnBodegaAlmacafe + $kgEnTrilla,
+            'kg_recibidos' => $kgEnBodega + $kgEnBodegasIntermedias + $kgEnTrilla,
             'kg_en_bodega' => $kgEnBodega,
-            'kg_en_bodega_especial' => $kgEnBodegaEspecial,
-            'kg_en_bodega_almacafe' => $kgEnBodegaAlmacafe,
+            'bodegas' => $porBodega->map(fn ($b) => [
+                'id' => (int) $b->id,
+                'nombre' => $b->nombre,
+                'kg' => (float) $b->kg,
+            ])->all(),
             'kg_en_trilla' => $kgEnTrilla,
             'kg_en_despacho' => $kgProductoPendiente + (float) $rows->kg_pendiente_despacho_directo,
             'existencia' => max(0, (float) $rows->kg_recibidos_total - $kgDespachadoProductos - (float) $rows->kg_despachado_directo),

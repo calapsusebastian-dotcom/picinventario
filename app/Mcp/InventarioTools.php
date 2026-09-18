@@ -54,15 +54,14 @@ class InventarioTools
 
     #[McpTool(
         name: 'saldo_bodega',
-        description: 'Suma los kg actualmente disponibles en bodega (aún no enviados a trilla, despacho, bodega especial ni bodega almacafe). Opcionalmente filtra por cliente.'
+        description: 'Suma los kg actualmente disponibles en la bodega principal (aún no enviados a trilla, despacho, ni a ninguna bodega intermedia). Opcionalmente filtra por cliente.'
     )]
     public function saldoBodega(?string $cliente = null): array
     {
         $registros = InventoryRecord::query()
             ->where('enviado_a_trilla', false)
             ->where('enviado_a_despacho', false)
-            ->where('enviado_a_bodega_especial', false)
-            ->where('enviado_a_bodega_almacafe', false)
+            ->whereNull('bodega_actual_id')
             ->when($cliente, fn ($q) => $q->where('cliente', $cliente))
             ->with('trillas')
             ->get();
@@ -78,7 +77,7 @@ class InventarioTools
 
     #[McpTool(
         name: 'resumen_kpis',
-        description: 'Devuelve el mismo resumen de KPIs que se ve en el Tablero: kg en bodega, en bodega especial, en bodega almacafe, en trilla, en despacho, existencia total y el factor de recepción ponderado.'
+        description: 'Devuelve el mismo resumen de KPIs que se ve en el Tablero: kg en bodega principal, un desglose de kg por cada bodega intermedia (bodegas), kg en trilla, en despacho, existencia total y el factor de recepción ponderado.'
     )]
     public function resumenKpis(): array
     {

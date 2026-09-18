@@ -21,8 +21,8 @@
             <div class="brand">
                 <div class="brand-mark">PIC</div>
                 <div>
-                    <h1>Bodega Almacafe · Bodega PIC</h1>
-                    <p class="subtitle">Remisiones movidas desde Bodega a la bodega Almacafe — elige cuáles pasan a Trilla o Despacho</p>
+                    <h1>{{ $bodega->nombre }} · Bodega PIC</h1>
+                    <p class="subtitle">Remisiones movidas desde Bodega a {{ $bodega->nombre }} — elige cuáles pasan a Trilla o Despacho</p>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12l8.73-5.04"/><path d="M12 22.08V12"/></svg>
                 </div>
                 <div>
-                    <div class="kpi-label">Saldo en bodega Almacafe</div>
+                    <div class="kpi-label">Saldo en {{ $bodega->nombre }}</div>
                     <div class="kpi-value">{{ number_format($totales['saldo'], 2, ',', '.') }} <small>kg</small></div>
                 </div>
             </div>
@@ -64,14 +64,14 @@
             </div>
         </div>
 
-        <div class="section-label">Movimientos de bodega Almacafe ({{ $movimientos->total() }})</div>
+        <div class="section-label">Movimientos de {{ $bodega->nombre }} ({{ $movimientos->total() }})</div>
 
         <div class="table-card">
             <div class="table-scroll">
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Trilla</th><th>Despacho</th><th></th>
+                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th>Observación</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Trilla</th><th>Despacho</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -90,6 +90,7 @@
                                 <td class="mono">{{ $r->remision ?: '—' }}</td>
                                 <td>{{ $r->calidad_enviada ?: '—' }}</td>
                                 <td>{{ $r->cliente ?: '—' }}</td>
+                                <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $r->observacion }}">{{ $r->observacion ?: '—' }}</td>
                                 <td class="mono num">{{ number_format($mov['kg_recibido'], 2, ',', '.') }}</td>
                                 <td class="mono num">{{ number_format($mov['kg_usado_trilla'], 2, ',', '.') }}</td>
                                 <td class="mono num" style="font-weight:700;">{{ number_format($mov['saldo'], 2, ',', '.') }}</td>
@@ -117,7 +118,7 @@
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="12">
+                                    <td colspan="13">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">General</span></div>
@@ -141,7 +142,7 @@
                                                 <div class="detail-item"><span>Humedad</span><span>{{ $r->humedad_rec ? $r->humedad_rec.'%' : '—' }}</span></div>
                                             </div>
                                             <div class="detail-block">
-                                                <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-accent)"></span><span class="detail-title">Bodega Almacafe (saldo)</span></div>
+                                                <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-accent)"></span><span class="detail-title">{{ $bodega->nombre }} (saldo)</span></div>
                                                 <div class="detail-item"><span>Kg recibidos</span><span>{{ number_format($mov['kg_recibido'], 2, ',', '.') }} kg</span></div>
                                                 <div class="detail-item"><span>Kg enviados a trilla</span><span>{{ number_format($mov['kg_usado_trilla'], 2, ',', '.') }} kg</span></div>
                                                 @if ($r->remision_envio_trilla)
@@ -162,7 +163,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="12">No hay remisiones en la bodega Almacafe.</td></tr>
+                            <tr class="empty-row"><td colspan="13">No hay remisiones en {{ $bodega->nombre }}.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

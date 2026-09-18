@@ -43,6 +43,12 @@ new class extends Component
 
         return $user->isAdmin() || $user->hasRole($role);
     }
+
+    /** Active intermediate bodegas, for their own sidebar links. */
+    public function bodegas()
+    {
+        return \App\Models\Bodega::where('activo', true)->orderBy('nombre')->get();
+    }
 }; ?>
 
 <div class="contents" x-data="{ open: false, collapsed: false }">
@@ -97,14 +103,12 @@ new class extends Component
                     <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
                     {{ __('Bodega') }}
                 </x-sidebar-link>
-                <x-sidebar-link :href="route('bodega-especial')" :active="request()->routeIs('bodega-especial')" wire:navigate>
-                    <x-slot name="icon"><x-nav-icon name="bodega-especial" /></x-slot>
-                    {{ __('Bodega Especiales') }}
-                </x-sidebar-link>
-                <x-sidebar-link :href="route('bodega-almacafe')" :active="request()->routeIs('bodega-almacafe')" wire:navigate>
-                    <x-slot name="icon"><x-nav-icon name="bodega-almacafe" /></x-slot>
-                    {{ __('Bodega Almacafe') }}
-                </x-sidebar-link>
+                @foreach ($this->bodegas() as $b)
+                    <x-sidebar-link :href="route('bodega.detalle', $b)" :active="request()->routeIs('bodega.detalle') && request()->route('bodega')?->id === $b->id" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
+                        {{ $b->nombre }}
+                    </x-sidebar-link>
+                @endforeach
             @endif
             @if ($this->canAccessModule('trilla'))
                 <x-sidebar-link :href="route('trilla')" :active="request()->routeIs('trilla')" wire:navigate>
@@ -136,6 +140,10 @@ new class extends Component
                     <x-sidebar-link :href="route('ubicaciones')" :active="request()->routeIs('ubicaciones')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="ubicaciones" /></x-slot>
                         {{ __('Ubicaciones') }}
+                    </x-sidebar-link>
+                    <x-sidebar-link :href="route('bodegas')" :active="request()->routeIs('bodegas')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
+                        {{ __('Bodegas') }}
                     </x-sidebar-link>
                     <x-sidebar-link :href="route('stock')" :active="request()->routeIs('stock')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="stock" /></x-slot>
@@ -214,14 +222,12 @@ new class extends Component
                         <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
                         {{ __('Bodega') }}
                     </x-sidebar-link>
-                    <x-sidebar-link :href="route('bodega-especial')" :active="request()->routeIs('bodega-especial')" wire:navigate>
-                        <x-slot name="icon"><x-nav-icon name="bodega-especial" /></x-slot>
-                        {{ __('Bodega Especiales') }}
-                    </x-sidebar-link>
-                    <x-sidebar-link :href="route('bodega-almacafe')" :active="request()->routeIs('bodega-almacafe')" wire:navigate>
-                        <x-slot name="icon"><x-nav-icon name="bodega-almacafe" /></x-slot>
-                        {{ __('Bodega Almacafe') }}
-                    </x-sidebar-link>
+                    @foreach ($this->bodegas() as $b)
+                        <x-sidebar-link :href="route('bodega.detalle', $b)" :active="request()->routeIs('bodega.detalle') && request()->route('bodega')?->id === $b->id" wire:navigate>
+                            <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
+                            {{ $b->nombre }}
+                        </x-sidebar-link>
+                    @endforeach
                 @endif
                 @if ($this->canAccessModule('trilla'))
                     <x-sidebar-link :href="route('trilla')" :active="request()->routeIs('trilla')" wire:navigate>
@@ -251,6 +257,10 @@ new class extends Component
                     <x-sidebar-link :href="route('ubicaciones')" :active="request()->routeIs('ubicaciones')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="ubicaciones" /></x-slot>
                         {{ __('Ubicaciones') }}
+                    </x-sidebar-link>
+                    <x-sidebar-link :href="route('bodegas')" :active="request()->routeIs('bodegas')" wire:navigate>
+                        <x-slot name="icon"><x-nav-icon name="bodega" /></x-slot>
+                        {{ __('Bodegas') }}
                     </x-sidebar-link>
                     <x-sidebar-link :href="route('stock')" :active="request()->routeIs('stock')" wire:navigate>
                         <x-slot name="icon"><x-nav-icon name="stock" /></x-slot>

@@ -65,8 +65,9 @@
             <select wire:model.live="filterUbicacion">
                 <option value="Todos">Todas las ubicaciones</option>
                 <option value="En bodega">En bodega</option>
-                <option value="En bodega especial">En bodega especial</option>
-                <option value="En bodega almacafe">En bodega almacafe</option>
+                @foreach ($bodegas as $b)
+                    <option value="bodega:{{ $b->id }}">{{ $b->nombre }}</option>
+                @endforeach
                 <option value="En trilla">En trilla</option>
                 <option value="En despacho">En despacho</option>
                 <option value="Trillado">Trillado</option>
@@ -92,7 +93,7 @@
                             @endphp
                             <tr class="data-row{{ $r->isDespachadoDirecto() ? ' row-despachado' : '' }}" wire:key="mov-{{ $r->id }}" wire:click="toggleExpand({{ $r->id }})">
                                 <td class="checkbox-cell" @click.stop="null">
-                                    @if ($mov['saldo'] > 0.001 && ! $r->enviado_a_trilla && ! $r->enviado_a_despacho && ! $r->enviado_a_bodega_especial && ! $r->enviado_a_bodega_almacafe)
+                                    @if ($mov['saldo'] > 0.001 && ! $r->enviado_a_trilla && ! $r->enviado_a_despacho && ! $r->bodega_actual_id)
                                         <input type="checkbox" wire:model.live="selected" value="{{ $r->id }}">
                                     @endif
                                 </td>
@@ -105,20 +106,11 @@
                                 <td class="mono num" style="font-weight:700;">{{ number_format($mov['saldo'], 2, ',', '.') }}</td>
                                 <td><span class="badge" style="background:{{ $col['bg'] }};color:{{ $col['fg'] }}">{{ $r->estatus }}</span></td>
                                 <td>
-                                    @if ($r->isDespachadoDirecto())
-                                        <span class="badge" style="background:#DCF3EC;color:#0B6B54;">Despachado</span>
-                                    @elseif ($r->enviado_a_despacho)
-                                        <span class="badge" style="background:#E1EFFB;color:#1D5FA8;">En despacho</span>
-                                    @elseif ($mov['saldo'] <= 0.001 && $r->trillas->isNotEmpty())
-                                        <span class="badge" style="background:var(--pic-accent-soft);color:var(--pic-accent-deep)">Trillado</span>
-                                    @elseif ($r->enviado_a_trilla)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En trilla</span>
-                                    @elseif ($r->enviado_a_bodega_especial)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En bodega especial</span>
-                                    @elseif ($r->enviado_a_bodega_almacafe)
-                                        <span class="badge" style="background:var(--pic-purple-soft);color:var(--pic-purple)">En bodega almacafe</span>
+                                    @php $badge = $r->ubicacionBadge(); @endphp
+                                    @if ($badge['bg'])
+                                        <span class="badge" style="background:{{ $badge['bg'] }};color:{{ $badge['fg'] }}">{{ $badge['label'] }}</span>
                                     @else
-                                        <span class="badge" style="background:var(--pic-amber-soft);color:var(--pic-amber)">En bodega</span>
+                                        {{ $badge['label'] }}
                                     @endif
                                 </td>
                             </tr>
@@ -189,14 +181,14 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                     Enviar a despacho
                 </button>
-                <button type="button" class="btn-primary" style="background:var(--pic-purple);" wire:click="enviarABodegaEspecial">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V10l9-6 9 6v11"/><path d="M9 21v-7h6v7"/><path d="M3 10h18"/></svg>
-                    Enviar a bodega especiales
-                </button>
-                <button type="button" class="btn-primary" style="background:#0B6B54;" wire:click="enviarABodegaAlmacafe">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V11l9-6 9 6v10"/><path d="M3 10h18"/><ellipse cx="12" cy="16" rx="3" ry="4"/><path d="M12 12v8"/></svg>
-                    Enviar a bodega almacafe
-                </button>
+                @if ($bodegas->isNotEmpty())
+                    <select wire:change="enviarABodega($event.target.value)" style="max-width:220px;">
+                        <option value="">Enviar a bodega ▾</option>
+                        @foreach ($bodegas as $b)
+                            <option value="{{ $b->id }}">{{ $b->nombre }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
         @endif
 

@@ -52,7 +52,7 @@ Una vez que una remisión tiene `kg_recibidos`, entra a **Bodega** y de ahí se 
 
 - **Trilla**: convierte materia prima (remisiones) en productos terminados (`TrillaProducto`) — un lote de trilla puede usar varias remisiones y generar varios productos.
 - **Despacho directo**: la materia prima sale tal cual, sin pasar por trilla.
-- **Bodega Especiales / Bodega Almacafe**: bodegas intermedias — desde ahí una remisión puede seguir hacia Trilla o Despacho, igual que desde Bodega.
+- **Bodegas intermedias** (`Bodega Especiales`, `Bodega Almacafe`, y cualquier otra que se cree en `/bodegas`): áreas de tránsito — desde ahí una remisión puede seguir hacia Trilla o Despacho, igual que desde Bodega. Son dinámicas, no una lista fija: un admin puede crear tantas como necesite.
 - **Despacho**: paso final, sea de un producto de trilla o de materia prima directa. Aquí se registra la remisión de despacho, destino y número de factura.
 
 **Stock** e **Informes** son vistas de solo lectura sobre todo este flujo: Stock muestra cuánto queda de cada producto/calidad en cada punto; Informes muestra totales y tendencias por mes/cliente/producto.
@@ -61,7 +61,7 @@ Una vez que una remisión tiene `kg_recibidos`, entra a **Bodega** y de ahí se 
 
 El acceso se controla por el array `roles` de cada usuario (`App\Models\User`):
 
-- **`admin`**: acceso a todo — Tablero, Informes, Contra Entrega, las 3 bodegas, Stock, Roles, Productos, Clientes, Ubicaciones, y las 5 etapas del flujo de datos.
+- **`admin`**: acceso a todo — Tablero, Informes, Contra Entrega, Bodega y todas las bodegas intermedias, Stock, Roles, Productos, Clientes, Ubicaciones, Bodegas, y las 5 etapas del flujo de datos.
 - **Un rol por etapa** (`general`, `envio`, `recepcion`, `destino`, `imov`): acceso solo a esa pestaña del flujo de datos, para cualquier remisión.
 - **`trilla`** / **`despacho`**: acceso al módulo de Trilla o Despacho respectivamente — son módulos aparte del flujo de datos principal.
 
@@ -75,25 +75,27 @@ Solo un admin puede crear una remisión (botón "Nuevo registro" en el Tablero).
 
 ### Enviar remisiones desde una bodega
 
-Al seleccionar una o más remisiones en Bodega, Bodega Especiales o Bodega Almacafe y darle "Enviar a trilla", el sistema pide primero el **número de remisión del envío físico** (el documento que acompaña el camión hacia la trilladora) antes de confirmar — es un dato aparte del número de remisión original de cada registro, y se guarda en `remision_envio_trilla`.
+Al seleccionar una o más remisiones en Bodega o en cualquier bodega intermedia y darle "Enviar a trilla", el sistema pide primero el **número de remisión del envío físico** (el documento que acompaña el camión hacia la trilladora) antes de confirmar — es un dato aparte del número de remisión original de cada registro, y se guarda en `remision_envio_trilla`. Desde la Bodega principal, "Enviar a bodega ▾" es un desplegable con todas las bodegas intermedias activas — no botones fijos, para que escale a cuantas bodegas existan.
 
 ### Revertir acciones
 
-- **Bodega Especiales / Bodega Almacafe → Bodega**: "Reversar a bodega" quita el flag correspondiente y la remisión vuelve a aparecer en Bodega normal.
+- **Bodega intermedia → Bodega**: "Reversar a bodega" limpia `bodega_actual_id` y la remisión vuelve a aparecer en Bodega normal.
 - **Despacho pendiente → Bodega**: una remisión enviada directo a despacho pero sin remisión de despacho asignada todavía se puede reversar y vuelve a quedar disponible en Bodega.
 - **Deshacer un despacho ya hecho**: tanto para un producto de trilla despachado como para materia prima despachada directo, se puede "revertir" — limpia la remisión de despacho, destino y factura, y el registro vuelve a la cola de pendientes de despacho.
 
 ### Gestión de catálogos (solo admin)
 
 - **Usuarios y roles** (`/usuarios`): crear/editar/eliminar usuarios y asignarles uno o más roles (`admin`, `general`, `envio`, `recepcion`, `destino`, `imov`, `trilla`, `despacho`). Un admin no puede quitarse a sí mismo el rol de admin ni eliminar su propia cuenta.
+- **Bodegas** (`/bodegas`): crear bodegas intermedias nuevas (cada una obtiene automáticamente su propia página, igual de funcional que Bodega Especiales) y activar/desactivar las existentes. No hay borrado — solo desactivación, para no perder el historial de una bodega que ya tuvo remisiones.
 - **Productos, Clientes, Ubicaciones**: catálogos simples (solo un nombre), con creación/edición/eliminación — alimentan los menús desplegables del resto del sistema.
 
 ## 4. Arquitectura técnica
 
 - **Backend**: Laravel 13, cada módulo (Tablero, Bodega, Trilla, Despacho, etc.) es un componente Livewire 3 independiente con su propia clase en `app/Livewire/`.
 - **Frontend**: Blade + el sistema de diseño compartido en `resources/css/inventory-board.css` (clase raíz `.pic-board`), sin build de JS aparte de Vite para compilar CSS.
-- **Base de datos**: MySQL. La tabla central es `inventory_records` (una fila por remisión, con todos los campos de las 5 etapas más los flags de flujo físico: `enviado_a_trilla`, `enviado_a_despacho`, `enviado_a_bodega_especial`, `enviado_a_bodega_almacafe`, `remision_despacho`). `trillas` y `trilla_productos` cubren el módulo de Trilla, unidos a `inventory_records` por la tabla pivote `trilla_inventory_record` (cuánto kg de cada remisión usó cada lote).
-- **Listados grandes**: cada página de tabla pushea sus filtros a SQL (`filteredQuery()` + `paginate()`), en vez de cargar todo a memoria — patrón repetido en Tablero, Bodega, Bodega Especial/Almacafe y Contra Entrega.
+- **Base de datos**: MySQL. La tabla central es `inventory_records` (una fila por remisión, con todos los campos de las 5 etapas más los flags de flujo físico: `enviado_a_trilla`, `enviado_a_despacho`, `bodega_actual_id`, `remision_despacho`). `bodega_actual_id` apunta a la tabla `bodegas` (nombre, slug, activo) — null significa "todavía en la Bodega principal, no se ha movido a ninguna bodega intermedia". `trillas` y `trilla_productos` cubren el módulo de Trilla, unidos a `inventory_records` por la tabla pivote `trilla_inventory_record` (cuánto kg de cada remisión usó cada lote).
+- **Bodegas intermedias**: una sola página reutilizable (`App\Livewire\BodegaDetallePage`, ruta `/bodega/{bodega:slug}`) sirve para cualquier bodega — Especiales, Almacafe, o una creada después. El badge de "Ubicación"/"Etapa" que muestra en qué bodega está cada remisión viene de un solo método (`InventoryRecord::ubicacionBadge()`), usado igual en el Tablero, en Bodega y en el PDF, para que no haya lógica duplicada por cada vista.
+- **Listados grandes**: cada página de tabla pushea sus filtros a SQL (`filteredQuery()` + `paginate()`), en vez de cargar todo a memoria — patrón repetido en Tablero, Bodega, cada bodega intermedia y Contra Entrega.
 - **Exportes**: PDF del Tablero (formato corporativo, vía `barryvdh/laravel-dompdf`) y CSV de Contra Entrega.
 
 ## 5. Mapa de páginas
@@ -103,8 +105,8 @@ Al seleccionar una o más remisiones en Bodega, Bodega Especiales o Bodega Almac
 | `/inventario` | Tablero (vista general de todas las remisiones) | admin |
 | `/inventario/{etapa}` | General / Envío / Recepción / Destino / Imov | admin o el rol de esa etapa |
 | `/bodega` | Bodega | admin |
-| `/bodega-especial` | Bodega Especiales | admin |
-| `/bodega-almacafe` | Bodega Almacafe | admin |
+| `/bodega/{slug}` | Una bodega intermedia (ej. `/bodega/especiales`, `/bodega/almacafe`) | admin |
+| `/bodegas` | Crear y administrar bodegas intermedias | admin |
 | `/trilla` | Trilla | admin o rol `trilla` |
 | `/despacho` | Despacho | admin o rol `despacho` |
 | `/contra-entrega` | Contra Entrega (envío vs recepción) | admin |
@@ -120,7 +122,7 @@ Bodega PIC expone sus datos vía un servidor MCP remoto (`POST /mcp`, protegido 
 
 | Archivo | Herramientas |
 |---|---|
-| `InventarioTools.php` | `buscar_remision`, `saldo_bodega`, `resumen_kpis`, `listar_pendientes_despacho` |
+| `InventarioTools.php` | `buscar_remision`, `saldo_bodega` (solo bodega principal), `resumen_kpis` (incluye un desglose de kg por cada bodega intermedia), `listar_pendientes_despacho` |
 | `BusquedaTools.php` | `listar_remisiones` (búsqueda con filtros) |
 | `TrillaTools.php` | `listar_lotes_trilla`, `detalle_lote_trilla` |
 | `DespachoTools.php` | `buscar_despacho` |

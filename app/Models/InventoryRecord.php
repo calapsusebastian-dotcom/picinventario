@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class InventoryRecord extends Model
@@ -16,7 +17,7 @@ class InventoryRecord extends Model
         'destino', 'cliente', 'negocio', 'estatus', 'existencia', 'taza_destino', 'puntaje_taza_destino',
         'imov', 'enviado_a_trilla', 'remision_envio_trilla',
         'enviado_a_despacho', 'remision_despacho', 'numero_factura', 'fecha_despacho',
-        'enviado_a_bodega_especial', 'enviado_a_bodega_almacafe',
+        'enviado_a_bodega_especial', 'enviado_a_bodega_almacafe', 'bodega_actual_id',
     ];
 
     protected $casts = [
@@ -63,6 +64,16 @@ class InventoryRecord extends Model
     }
 
     /**
+     * The intermediate bodega this remisión is currently sitting in (Bodega
+     * Especiales, Bodega Almacafe, or any bodega created afterward). Null
+     * means it's still in the main Bodega, not yet routed anywhere.
+     */
+    public function bodegaActual(): BelongsTo
+    {
+        return $this->belongsTo(Bodega::class, 'bodega_actual_id');
+    }
+
+    /**
      * Kg recibidos minus whatever has already been assigned to trilla lotes.
      * Null if this remisión hasn't gone through recepción yet.
      */
@@ -99,39 +110,50 @@ class InventoryRecord extends Model
     }
 
     /**
-     * Plain-text version of the "Ubicación" pipeline badge shown across the
-     * Tablero and bodega pages — used where a colored badge doesn't apply,
-     * like PDF exports.
+     * The "Ubicación" pipeline badge shown across the Tablero and bodega
+     * pages — label plus the badge colors, so this single method drives
+     * every place that renders it instead of each view re-deriving its own
+     * copy of this same cascade.
+     *
+     * @return array{label: string, bg: ?string, fg: ?string}
      */
-    public function ubicacionLabel(): string
+    public function ubicacionBadge(): array
     {
         if ($this->isDespachadoDirecto()) {
-            return 'Despachado';
+            return ['label' => 'Despachado', 'bg' => '#DCF3EC', 'fg' => '#0B6B54'];
         }
 
         if ($this->enviado_a_despacho) {
-            return 'En despacho';
+            return ['label' => 'En despacho', 'bg' => '#E1EFFB', 'fg' => '#1D5FA8'];
         }
 
         $saldo = $this->kgDisponible();
 
         if ($saldo === null || $saldo <= 0.001) {
-            return $this->trillas->isNotEmpty() ? 'Trillado' : '—';
+            return $this->trillas->isNotEmpty()
+                ? ['label' => 'Trillado', 'bg' => 'var(--pic-accent-soft)', 'fg' => 'var(--pic-accent-deep)']
+                : ['label' => '—', 'bg' => null, 'fg' => null];
         }
 
         if ($this->enviado_a_trilla) {
-            return 'En trilla';
+            return ['label' => 'En trilla', 'bg' => 'var(--pic-purple-soft)', 'fg' => 'var(--pic-purple)'];
         }
 
-        if ($this->enviado_a_bodega_especial) {
-            return 'En bodega especial';
+        if ($this->bodega_actual_id) {
+            return [
+                'label' => $this->bodegaActual?->nombre ?? 'En bodega',
+                'bg' => 'var(--pic-purple-soft)',
+                'fg' => 'var(--pic-purple)',
+            ];
         }
 
-        if ($this->enviado_a_bodega_almacafe) {
-            return 'En bodega almacafe';
-        }
+        return ['label' => 'En bodega', 'bg' => 'var(--pic-amber-soft)', 'fg' => 'var(--pic-amber)'];
+    }
 
-        return 'En bodega';
+    /** Plain-text version of ubicacionBadge() — for PDF exports and the MCP tools. */
+    public function ubicacionLabel(): string
+    {
+        return $this->ubicacionBadge()['label'];
     }
 
     protected function kgUsadoEnTrillas(): float

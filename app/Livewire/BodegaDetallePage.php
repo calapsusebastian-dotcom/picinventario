@@ -2,17 +2,28 @@
 
 namespace App\Livewire;
 
+use App\Models\Bodega;
 use App\Models\InventoryRecord;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-class BodegaAlmacafePage extends Component
+/**
+ * One reusable page for any intermediate bodega (Bodega Especiales, Bodega
+ * Almacafe, and any bodega created afterward) — behaves identically to the
+ * bodega-specific pages this replaced, just scoped by bodega_actual_id
+ * instead of a hardcoded boolean flag per bodega.
+ */
+class BodegaDetallePage extends Component
 {
     use WithPagination;
 
     protected string $paginationView = 'livewire.pagination';
+
+    #[Locked]
+    public Bodega $bodega;
 
     public string $search = '';
 
@@ -24,9 +35,12 @@ class BodegaAlmacafePage extends Component
     public bool $showEnviarATrillaModal = false;
     public string $remisionEnvioTrilla = '';
 
-    public function mount(): void
+    public function mount(Bodega $bodega): void
     {
         abort_unless(auth()->user()->isAdmin(), 403);
+        abort_unless($bodega->activo, 404);
+
+        $this->bodega = $bodega;
     }
 
     public function updatedSearch(): void
@@ -106,11 +120,11 @@ class BodegaAlmacafePage extends Component
 
     /**
      * Send a remisión back to the regular Bodega's pool — clears
-     * enviado_a_bodega_almacafe so it shows up there as "Pendiente" again.
+     * bodega_actual_id so it shows up there as "Pendiente" again.
      */
     public function reversarABodega(int $id): void
     {
-        InventoryRecord::whereKey($id)->update(['enviado_a_bodega_almacafe' => false]);
+        InventoryRecord::whereKey($id)->update(['bodega_actual_id' => null]);
 
         $this->selected = array_values(array_diff($this->selected, [$id]));
 
@@ -135,7 +149,7 @@ class BodegaAlmacafePage extends Component
                 'inventory_records.id'
             )
             ->with('trillas')
-            ->where('enviado_a_bodega_almacafe', true)
+            ->where('bodega_actual_id', $this->bodega->id)
             ->when($this->search !== '', function (Builder $q) {
                 $term = '%'.$this->search.'%';
                 $q->where(function (Builder $w) use ($term) {
@@ -162,7 +176,7 @@ class BodegaAlmacafePage extends Component
                 'saldo' => (float) $r->saldo,
             ]);
 
-        return view('livewire.bodega-almacafe-page', [
+        return view('livewire.bodega-detalle-page', [
             'movimientos' => $movimientos,
             'totales' => $this->globalTotales(),
         ]);
@@ -171,11 +185,6 @@ class BodegaAlmacafePage extends Component
     /**
      * The 3 header KPIs — always over everything ever sent to this bodega
      * (never scoped by the search box), so they read as a fixed reference.
-     *
-     * "kg_usado_trilla" here means kg actually *released* to Trilla
-     * (enviado_a_trilla = true), not kg Trilla has already pivoted/consumed
-     * — and "saldo" only counts remisiones still sitting here, not yet sent
-     * onward to Trilla or Despacho.
      */
     private function globalTotales(): array
     {
@@ -190,7 +199,7 @@ class BodegaAlmacafePage extends Component
                 '=',
                 'inventory_records.id'
             )
-            ->where('enviado_a_bodega_almacafe', true)
+            ->where('bodega_actual_id', $this->bodega->id)
             ->toBase()
             ->selectRaw('
                 COALESCE(SUM(inventory_records.kg_recibidos), 0) as kg_recibido,

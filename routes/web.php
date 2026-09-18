@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Bodega;
 use App\Support\InventoryStages;
 use Illuminate\Support\Facades\Route;
 
@@ -62,12 +63,12 @@ Route::view('bodega', 'bodega')
     ->middleware(['auth', 'verified'])
     ->name('bodega');
 
-Route::view('bodega-especial', 'bodega-especial')
+Route::view('bodegas', 'bodegas')
     ->middleware(['auth', 'verified'])
-    ->name('bodega-especial');
+    ->name('bodegas');
 
-Route::view('bodega-almacafe', 'bodega-almacafe')
+Route::get('bodega/{bodega:slug}', fn (Bodega $bodega) => view('bodega-detalle', ['bodega' => $bodega]))
     ->middleware(['auth', 'verified'])
-    ->name('bodega-almacafe');
+    ->name('bodega.detalle');
 
 require __DIR__.'/auth.php';
