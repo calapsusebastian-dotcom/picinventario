@@ -71,7 +71,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Trilla</th><th>Despacho</th><th></th>
+                            <th class="checkbox-cell"></th><th>Fecha</th><th>Remisión</th><th>Calidad</th><th>Cliente</th><th>Observación</th><th class="num">Kg recibido</th><th class="num">Kg a trilla</th><th class="num">Saldo</th><th>Estatus</th><th>Trilla</th><th>Despacho</th><th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -90,6 +90,7 @@
                                 <td class="mono">{{ $r->remision ?: '—' }}</td>
                                 <td>{{ $r->calidad_enviada ?: '—' }}</td>
                                 <td>{{ $r->cliente ?: '—' }}</td>
+                                <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ $r->observacion }}">{{ $r->observacion ?: '—' }}</td>
                                 <td class="mono num">{{ number_format($mov['kg_recibido'], 2, ',', '.') }}</td>
                                 <td class="mono num">{{ number_format($mov['kg_usado_trilla'], 2, ',', '.') }}</td>
                                 <td class="mono num" style="font-weight:700;">{{ number_format($mov['saldo'], 2, ',', '.') }}</td>
@@ -117,7 +118,7 @@
 
                             @if ($expandedRow === $r->id)
                                 <tr class="detail-row">
-                                    <td colspan="12">
+                                    <td colspan="13">
                                         <div class="detail-grid">
                                             <div class="detail-block">
                                                 <div class="detail-block-head"><span class="role-dot" style="background:var(--pic-ink-faint)"></span><span class="detail-title">General</span></div>
@@ -162,7 +163,7 @@
                                 </tr>
                             @endif
                         @empty
-                            <tr class="empty-row"><td colspan="12">No hay remisiones en la bodega especial.</td></tr>
+                            <tr class="empty-row"><td colspan="13">No hay remisiones en la bodega especial.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
